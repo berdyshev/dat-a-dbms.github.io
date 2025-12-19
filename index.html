@@ -294,7 +294,7 @@
 				<input type="text" id="queryName" value="Новий запит" style="flex:1; padding:8px; font-size:16px;">
 				
 				<span style="white-space:nowrap;">з таблиці:</span>
-				<select id="fromTable" class="query-table-select" onchange="populateFieldDropdown(this)" style="flex:1; padding:8px; font-size:16px; max-width:150px;">					
+				<select id="fromTable" class="query-table-select" style="flex:1; padding:8px; font-size:16px; max-width:150px;">					
 					<!-- сюди підставляємо таблиці -->
 				</select>
 			</div>
@@ -568,12 +568,12 @@
 	</div>
     <!-- Вікно перегляду створеного звіту -->
     <div id="reportPreviewModal" class="modal" style="display:none; z-index: 20000;">
-      <div class="modal-content" style="background: white; width: 90%; max-width: 1000px; position: relative; display: flex;">
+      <div class="modal-content" style="background: white; width: 90%; max-width: 1000px; height:80%; position: relative; display: flex;">
         
         <!-- Основна частина з canvas -->
         <div style="flex-grow: 1; padding-right: 10px;">
           <h2 id="reportPreviewTitle" style="margin-top: 0;">Попередній перегляд звіту</h2>
-          <div id="reportPreviewCanvas" style="border: 1px solid #ccc; min-height: 400px; position: relative; background: #fff;"></div>
+          <div id="reportPreviewCanvas" style="border: 1px solid #ccc; min-height: 400px; height:95%; position: relative; background: #fff;"></div>
         </div>
     
         <!-- Панель кнопок -->
@@ -818,7 +818,7 @@
 				<div style="text-align: center; margin-bottom: 15px;"> <img src="logo.png" alt="Логотип" width="128" height="auto"> </div>
 				<h2 style="margin-top: 0;text-align:center;">Про <strong>dat.A</strong></h2>
 				<p><strong>dat.A</strong> — це простий вебзастосунок для роботи з базами даних безпосередньо у вашому браузері.</p>
-				<p><strong>Версія:</strong> 1.0 (31082025)</p>
+				<p><strong>Версія:</strong> 1.1 (19122025)</p>
 				<p>Розроблено з любов'ю до інформатики та тих, хто її вивчає, і тих, хто їх навчає  💻❤️</p>
 			</div>
 			<!-- Права частина: кнопка закриття -->
@@ -1366,6 +1366,43 @@
      style="position: fixed; top: 0; right: -300px; width: 300px; height: 100vh; background: #f5f5f5; border-left: 1px solid #ccc; z-index: 10005; overflow-y: auto; transition: right 0.3s ease;">
     <div style="padding: 10px; background: #eee; font-weight: bold;">Структура бази даних</div>
     <div id="structureContent" style="padding: 10px;"></div>
+</div>
+
+<!-- Вікно зображення -->
+<div id="imageModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:20000; justify-content:center; align-items:center;"> 
+   <div style="background:white;width:600px;max-width:90%;max-height:90%;border-radius:12px;padding:15px;display:flex;flex-direction:column; ">
+     <!-- Центральна частина: зображення + кнопки -->  
+     <div style="flex:1; display:flex;gap:12px;">
+     <!-- Зображення -->
+          <div style=" flex:1; display:flex; justify-content:center; align-items:center;">
+            <img id="imagePreview" src="" style="max-width:100%; max-height:300px; object-fit:contain; border:1px solid #ccc;">
+          </div>
+     <!-- Кнопки справа -->
+          <div style=" display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <button onclick="saveImageUrl()" style=" width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer; ">
+				<div> 💾 </div>
+			    <div style="font-size:11px;">Зберегти</div>
+            </button>
+            <button onclick="deleteImageUrl()" style=" width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer; ">
+				<div> 🗑 </div>
+			<div style="font-size:11px;">Видалити</div>
+            </button>
+            <button onclick="closeImageModal()" style=" width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer; ">
+				<div> ❌ </div>
+			<div style="font-size:11px;">Скасувати</div>
+            </button>
+            </div>
+          </div>
+   <!-- Поле адреси внизу -->
+<div style="margin-top:12px; display:flex; gap:6px; width:100%;">
+  <input id="imageUrlInput" type="text" placeholder="https://example.com/image.jpg" 
+         style="flex:1; padding:8px; box-sizing:border-box; height:40px;">
+  <button id="previewImageButton" title="Завантажити"
+          style="height:40px; width:40px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; border: none; background:#f5f5f5;"
+          onclick="previewImageFromUrl()">⬇️
+  </button>
+</div>
+  </div>
 </div>
     
 </body>
