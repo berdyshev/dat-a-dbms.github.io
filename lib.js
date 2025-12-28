@@ -516,7 +516,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
                     option.textContent = refRow[displayIndex];  // показуємо PK або підставлене значення
                     select.appendChild(option);
                 });
-
+    
                 select.value = (cellData === null || cellData === undefined || cellData === "")
                     ? "empty"
                     : String(cellData);
@@ -524,7 +524,6 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         }
 
         select.disabled = !!isReadOnly;
-        
         container.appendChild(select);
         createdEl = select;
 
@@ -589,7 +588,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         createdEl = picker;
     }
 	// ===== IMAGE (URL) =====
-    if (typeStr === "зображення" || typeStr === "image") {
+    else if (typeStr === "зображення" || typeStr === "image") {
         rowData[index] = cellData || null;
     
         const btn = document.createElement("button");
@@ -683,7 +682,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
             });
         }
     }
-        
+  
     if (createdEl && createdEl !== container) {
         if (container.dataset.tableName) createdEl.dataset.tableName = container.dataset.tableName;
         if (container.dataset.fieldName) createdEl.dataset.fieldName = container.dataset.fieldName;
@@ -3404,7 +3403,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("textDecorationStrikethrough").addEventListener("change", (e) => {
         if (activeElement && isTextElement(activeElement)) updateTextDecoration();
     });
+    document.querySelectorAll('input[name="textAlign"]').forEach(radio => {
+		radio.addEventListener('change', updateTextAlign);
+	});
 });
+function updateTextAlign() {
+    const selected = document.querySelector('input[name="textAlign"]:checked');
+    if (activeElement && selected) {
+        activeElement.style.textAlign = selected.value;
+    }
+}
 
 function populateFieldSelectionPanel() {
     console.log("constructorMode=",constructorMode)
@@ -3438,17 +3446,12 @@ function populateFieldSelectionPanel() {
     }
 }
 
-
-
-
     function openTextOptions() {
         if (!activeElement || !isTextElement(activeElement)) {
             Message("Будь ласка, оберіть елемент 'Напис' або 'Поле' для налаштування тексту.");
             return;
         }
-
-
-        // Populate modal with current activeElement styles
+    
         const fontFamilySelect = document.getElementById("fontFamilySelect");
         const fontSizeInput = document.getElementById("fontSizeInput");
         const fontColorInput = document.getElementById("fontColorInput");
@@ -3456,18 +3459,25 @@ function populateFieldSelectionPanel() {
         const fontStyleToggle = document.getElementById("fontStyleToggle");
         const textDecorationUnderline = document.getElementById("textDecorationUnderline");
         const textDecorationStrikethrough = document.getElementById("textDecorationStrikethrough");
-
-        fontFamilySelect.value = activeElement.style.fontFamily || 'Arial';
+        const textAlignRadios = document.querySelectorAll('input[name="textAlign"]');
+    
+        // Заповнюємо існуючі стильові параметри
+        fontFamilySelect.value = activeElement.style.fontFamily.replace(/['"]/g, '') || 'Arial';
         fontSizeInput.value = parseInt(activeElement.style.fontSize) || 16;
         fontColorInput.value = activeElement.style.color || '#000000';
         fontWeightToggle.checked = activeElement.style.fontWeight === 'bold';
         fontStyleToggle.checked = activeElement.style.fontStyle === 'italic';
-
+    
         const textDecoration = activeElement.style.textDecoration;
         textDecorationUnderline.checked = textDecoration.includes('underline');
         textDecorationStrikethrough.checked = textDecoration.includes('line-through');
-
-
+    
+        // Встановлюємо вирівнювання
+        const currentAlign = activeElement.style.textAlign || 'left';
+        textAlignRadios.forEach(radio => {
+            radio.checked = radio.value === currentAlign;
+        });
+    
         document.getElementById("textOptionsModal").style.display = "flex";
     }
 
@@ -3504,15 +3514,16 @@ function populateFieldSelectionPanel() {
                 top: el.offsetTop,
                 width: el.offsetWidth,
                 height: el.offsetHeight,
-                fontFamily: el.style.fontFamily || "Arial",
+                fontFamily: el.style.fontFamily.replace(/['"]/g, '') || "Arial",
                 fontSize: el.style.fontSize || "16px",
                 fontWeight: el.style.fontWeight || "normal",
                 fontStyle: el.style.fontStyle || "normal",
                 textDecoration: el.style.textDecoration || "",
                 color: el.style.color || "#000000",
+                textAlign: el.style.textAlign || "left",
                 text: el.innerText || "",
                 tableName: el.dataset.tableName || null,
-                fieldName: el.dataset.fieldName || null
+                fieldName: el.dataset.fieldName || null            
             };
         });
 
@@ -3588,6 +3599,7 @@ function populateFieldSelectionPanel() {
                     fontStyle: el.style.fontStyle || 'normal',
                     textDecoration: el.style.textDecoration || '',
                     color: el.style.color || '#000000',
+                    textAlign: el.style.textAlign || 'left', 
                     tableName: el.dataset.tableName || '',
                     fieldName: el.dataset.fieldName || ''
                 };
@@ -3611,6 +3623,7 @@ function populateFieldSelectionPanel() {
                 fontStyle: el.fontStyle,
                 textDecoration: el.textDecoration,
                 color: el.color,
+                textAlign: el.textAlign || 'left',
                 padding: "5px",
                 boxSizing: "border-box",
                 overflow: "auto",
@@ -4591,8 +4604,8 @@ function addScreenLabel() {
     labelElement.className = constructorMode+"-element "+constructorMode+"-label";
     Object.assign(labelElement.style, {
         position: "absolute",
-        left: "50px",
-        top: "50px",
+        right: "10px",
+        top: "10px",
         width: "150px",
         height: "40px",
         border: "1px solid blue",
@@ -4615,8 +4628,8 @@ function addScreenField() {
     fieldElement.className = constructorMode+"-element "+constructorMode+"-field";
     Object.assign(fieldElement.style, {
         position: "absolute",
-        left: "200px",
-        top: "100px",
+        right: "10px",
+        top: "60px",
         width: "200px",
         height: "40px",
         border: "1px dashed green",
@@ -4852,6 +4865,7 @@ function previewForm(form = null, resetIndex = false) {
                 fontStyle: el.fontStyle || 'normal',
                 textDecoration: el.textDecoration || '',
                 color: el.color || '#000',
+                textAlign: el.textAlign || 'left',
                 tableName: el.tableName,
                 fieldName: el.fieldName,
                 text: el.text || ""
@@ -4873,6 +4887,7 @@ function previewForm(form = null, resetIndex = false) {
                 fontStyle: el.style.fontStyle || 'normal',
                 textDecoration: el.style.textDecoration || '',
                 color: el.style.color || '#000',
+                textAlign: el.style.textAlign || 'left',
                 tableName: el.dataset.tableName,
                 fieldName: el.dataset.fieldName,
                 text: el.innerText?.trim() || ""
@@ -4915,6 +4930,7 @@ function previewForm(form = null, resetIndex = false) {
                 fontStyle: el.fontStyle,
                 textDecoration: el.textDecoration,
                 color: el.color,
+                textAlign: el.textAlign || 'left', 
                 borderStyle: "inset",
                 borderWidth: "4px",
                 borderColor: "#888",
@@ -4923,7 +4939,8 @@ function previewForm(form = null, resetIndex = false) {
                 background: "#f0f0f0",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: el.textAlign === 'center' ? 'center' :
+                               el.textAlign === 'right' ? 'flex-end' : 'flex-start', //для flex-вирівнювання
                 paddingLeft: "5px",
                 boxSizing: "border-box"
             });
@@ -5026,6 +5043,7 @@ function previewForm(form = null, resetIndex = false) {
                 fontStyle: el.fontStyle,
                 textDecoration: el.textDecoration,
                 color: el.color,
+                textAlign: el.textAlign || 'left',
                 padding: "5px",
                 border: "none",
                 background: "transparent",
