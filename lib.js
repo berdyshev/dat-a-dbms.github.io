@@ -5647,13 +5647,15 @@ function createNewRecord() {
         }
     }
 
+
     // імпорт бази даних SQLite
     function importSQLiteDb(file) {
+
         if (!file) {
             Message("Файл не вибрано.");
             return;
         }
-    
+
         const reader = new FileReader();
     
         reader.onload = function(event) {
@@ -5684,7 +5686,7 @@ function createNewRecord() {
                         
                         const columns = pragmaRes[0].values;
                         
-                        // 🆕 Зчитуємо зовнішні ключі
+                        // Зчитуємо зовнішні ключі
                         const fkRes = db.exec(`PRAGMA foreign_key_list("${name}")`);
                         const foreignKeys = fkRes.length ? fkRes[0].values.map(([id, seq, refTable, fromCol, toCol]) => ({
                             fromCol, refTable, toCol
@@ -5692,12 +5694,7 @@ function createNewRecord() {
                         
                         // Формуємо схему
                         const schema = columns.map(([cid, title, type, notnull, dflt_value, pk]) => {
-                           
                             const fk = foreignKeys.find(f => f.fromCol === title);
-                            if (!(fk ===undefined)) {
-                                console.log("FK import=", title,foreignKeys)
-                                console.log("fk.refTable import=", fk.refTable)
-                                console.log("fk.toCol import=", fk.toCol) }
                             return {
                                 title,
                                 type: type.toUpperCase() === "INTEGER" ? "Ціле число"
@@ -5709,13 +5706,14 @@ function createNewRecord() {
                                 comment: pk > 0 ? "Первинний ключ" : "",
                                 foreignKey: !!fk,
                                 refTable: fk ? fk.refTable : null,
-                                refField: fk ? fk.toCol : null
+                                refField: fk ? fk.toCol : null,
+                                subst: false // за замовчуванням
                             };
                         });
     
                         const selectRes = db.exec(`SELECT * FROM "${name}"`);
                         const dataRows = selectRes.length ? selectRes[0].values : [];
-                        console.log("Schema=",schema)
+                        
                         database.tables.push({
                             name: name,
                             schema: schema,
@@ -5725,47 +5723,50 @@ function createNewRecord() {
                 }
     
                 // 🆕 Додати зовнішні ключі до database.relations
-                const fkTables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-                if (fkTables.length > 0) {
-                    fkTables[0].values.forEach(([tableName]) => {
-                        const fkRes = db.exec(`PRAGMA foreign_key_list("${tableName}")`);
-                        if (!fkRes.length) return;
-    
-                        fkRes[0].values.forEach(fk => {
-                            const [, , refTable, fromCol, toCol] = fk;
-    
-                            // Уникаємо дублювання
+                // Спочатку очистимо relations
+                database.relations = [];
+                
+                // Пройдемо по всіх таблицях і зберемо foreign keys
+                database.tables.forEach(table => {
+                    table.schema.forEach(field => {
+                        if (field.foreignKey && field.refTable && field.refField) {
+                            // Перевіряємо чи такий зв'язок вже існує
                             const exists = database.relations.some(r =>
-                                r.fromTable === tableName &&
-                                r.fromField === fromCol &&
-                                r.toTable === refTable &&
-                                r.toField === toCol
+                                r.fromTable === table.name &&
+                                r.fromField === field.title &&
+                                r.toTable === field.refTable &&
+                                r.toField === field.refField
                             );
     
                             if (!exists) {
                                 database.relations.push({
-                                    fromTable: tableName,
-                                    fromField: fromCol,
-                                    toTable: refTable,
-                                    toField: toCol,
+                                    fromTable: table.name,
+                                    fromField: field.title,
+                                    toTable: field.refTable,
+                                    toField: field.refField,
                                     color: "red",
                                     readonly: true
                                 });
                             }
-                        });
+                        }
                     });
-                }
+                });
+    
                 database.fileName = fileName;
-                saveDatabase()
+                saveDatabase();
+                
                 database.tables.forEach(t => addTableToMenu(t.name));
                 updateMainTitle();
+                
                 Message("Базу даних імпортовано та збережено як '" + fileName + "'.");
+                
                 updateQuickAccessPanel(
                     getCurrentTableNames(),
                     getCurrentQueryNames(),
                     getCurrentReportNames(),
                     getCurrentFormNames()
                 );
+                
             } catch (e) {
                 Message("Помилка при імпорті: " + e.message);
             }
