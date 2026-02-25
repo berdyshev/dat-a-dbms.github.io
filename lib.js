@@ -1303,7 +1303,17 @@ function saveDbAndCreateTable() {
         createTable(); // відкриваємо створення таблиці
     }
 }
-
+/**
+ * 
+ * 
+ */
+function isDBExist() {
+	let isDB = database.fileName!=""
+	if(!isDB) {
+		 Message("База даних не існує!\nСтворіть або завантажте базу даних")		 
+    }
+	return isDB
+	}
 // Обʼєкт для збереження тимчасової інформації про створювану таблицю
 let table = {
     name: "Неназвана_таблиця", // назва таблиці за замовчуванням
@@ -1317,6 +1327,7 @@ let tableList = [];
  * Призначення: Відкриває модальне вікно для створення нової таблиці та ініціалізує її структуру.
  */
 function createTable() {
+	if(!isDBExist()) return
     // Переконаємось, що стара таблиця не перезаписується
     if (!database.tables) database.tables = [];
     table.schema = []; // очищення схеми
@@ -2223,6 +2234,7 @@ function resetNonReadonlyRelations() {
  * Показує модальне вікно конструктора запиту
  **/
 function createQuery() {
+	if(!isDBExist()) return
     resetNonReadonlyRelations();
     document.getElementById("queryName").value = "Новий_запит"; // Назва за замовчуванням
     document.getElementById("queryBody").innerHTML = ""; // Очистити старі рядки
@@ -4336,6 +4348,7 @@ function createConstructor() {
  * Конструктор звітів
  **/
 function createReport() {
+	if(!isDBExist()) return    
         constructorMode = "report";
         createConstructor();
     }
@@ -4369,6 +4382,7 @@ let selectedFormField = null;
  * Конструктор форм
  **/
 function createForm() {
+	if(!isDBExist()) return
         constructorMode = "form";
         createConstructor();
     }
@@ -6129,6 +6143,7 @@ function showDatabaseInfo() {
     // Відкриває модальне вікно для ручного введення та виконання SQL-запитів.
     
     function createOwnSQL() {
+		if(!isDBExist()) return
         document.getElementById("ownSqlInput").value = ""; // Очистити поле вводу
         document.getElementById("ownSqlResults").innerHTML = ""; // Очистити результати попередніх запитів
         document.getElementById("ownSqlModal").style.display = "flex";
