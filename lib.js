@@ -2404,7 +2404,7 @@ function populateFieldDropdown(tableSelect) {
         return;
     }
 
-    // Далі ваш код без змін...
+    // Далі код без змін...
     fieldSelect.innerHTML = "";
     groupSelect.innerHTML = "";
     const selectedTableName = tableSelect.value;
@@ -2471,6 +2471,10 @@ function isParameterPlaceholder(v) {
     
 function generateSqlQuery() {
     const queryName = document.getElementById("queryName").value.trim();
+    if (queryName==="") {
+		Message("Відсутня назва запиту");
+		return
+	}
     const rows = document.querySelectorAll("#queryBody tr");
 
     let selectFields = [];
