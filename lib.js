@@ -1743,7 +1743,7 @@ function saveSchema() {
 
         schema.push({
             primaryKey: isPrimaryKey,
-            autoInc: title===autoIncrement,
+            autoInc: type === 'Ціле число' && isPrimaryKey,
             title: title,
             type: type,
             comment: comment,
@@ -1846,16 +1846,19 @@ function saveSchema() {
     oldData.forEach(record => {
         const insertFields = [];
         const insertValues = [];
+        const placeholders = [];
+
         for (const key of newFieldNames) {
             if (key in record) {
                 insertFields.push(`"${key}"`);
-                insertValues.push(JSON.stringify(record[key]));
+                placeholders.push('?');
+                insertValues.push(record[key] ?? null);
             }
         }
         if (insertFields.length > 0) {
-            const insertSQL = `INSERT INTO "${newTableName}" (${insertFields.join(", ")}) VALUES (${insertValues.join(", ")});`;
+            const insertSQL = `INSERT INTO "${newTableName}" (${insertFields.join(", ")}) VALUES (${placeholders.join(", ")});`;
             try {
-                db.run(insertSQL);
+                db.run(insertSQL, insertValues);
             } catch (e) {
                 console.warn("Не вдалося вставити запис:", e, insertSQL);
             }
