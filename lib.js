@@ -14,7 +14,8 @@ const SCHEMA_TYPES = [
   "Дробове число",
   "Так/Ні",
   "Дата",
-  "Зображення"
+  "Зображення",
+  "Список"
 ];
 
 let SQL = null;
@@ -586,6 +587,26 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
 
         container.appendChild(picker);
         createdEl = picker;
+    }
+    // ===== СПИСОК (dropdown) =====
+    else if (typeStr === "список") {
+        const select = document.createElement("select");
+        const opts = Array.isArray(col.options) ? col.options : [];
+        const emptyOpt = document.createElement("option");
+        emptyOpt.value = "";
+        emptyOpt.textContent = "(пусто)";
+        select.appendChild(emptyOpt);
+        opts.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            select.appendChild(o);
+        });
+        select.value = opts.includes(String(cellData)) ? String(cellData) : "";
+        select.disabled = !!isReadOnly;
+        container.appendChild(select);
+        createdEl = select;
+        select.addEventListener("change", () => { rowData[index] = select.value || null; });
     }
 	// ===== IMAGE (URL) =====
     else if (typeStr === "зображення" || typeStr === "image") {
@@ -1460,7 +1481,7 @@ function addSchemaRow() {
         </td>
         <td contenteditable="true"></td>
         <td>
-            <select>
+            <select onchange="handleTypeChange(this)">
                 ${SCHEMA_TYPES.map(t => `<option>${t}</option>`).join("")}
             </select>
         </td>
@@ -1491,8 +1512,21 @@ function addSchemaRow() {
     toggleForeignKeyHeaders(); // гарантуємо правильний стан заголовків
 }
 
+function handleTypeChange(select) {
+    const row = select.closest("tr");
+    const commentCell = Array.from(row.querySelectorAll('[contenteditable]')).at(-1);
+    if (!commentCell) return;
+    if (select.value === "Список") {
+        commentCell.dataset.hint = "true";
+        if (!commentCell.innerText.trim()) commentCell.setAttribute("placeholder", "Варіант1, Варіант2, ...");
+    } else {
+        delete commentCell.dataset.hint;
+        commentCell.removeAttribute("placeholder");
+    }
+}
 
-    
+
+
 /**
 * Функція getFieldsForTable(tableName)
 * Призначення: Повертає список назв полів для заданої таблиці.
@@ -1710,7 +1744,12 @@ function saveSchema() {
         const isPrimaryKey = row.cells[0].querySelector("input").checked;
         let title = row.cells[1].innerText.trim();
         const type = row.cells[2].querySelector("select").value;
-        const comment = row.cells[3].innerText.trim();
+        const commentCell = Array.from(row.querySelectorAll('[contenteditable]')).at(-1);
+        const commentRaw = commentCell ? commentCell.innerText.trim() : "";
+        const options = type === "Список"
+            ? commentRaw.split(",").map(s => s.trim()).filter(Boolean)
+            : [];
+        const comment = type === "Список" ? "" : commentRaw;
 
         if (!title) continue;
 
@@ -1746,6 +1785,7 @@ function saveSchema() {
             autoInc: type === 'Ціле число' && isPrimaryKey,
             title: title,
             type: type,
+            options: options,
             comment: comment,
             foreignKey: isForeignKey,
             refTable: isForeignKey ? refTable : null,
@@ -1816,6 +1856,7 @@ function saveSchema() {
         else if (type === "ТЕКСТ") type = "TEXT";
         else if (type === "ТАК/НІ") type = "BOOLEAN";
         else if (type === "ДАТА") type = "TEXT";
+        else if (type === "СПИСОК") type = "TEXT";
 
         return `"${field.title}" ${type}`;
     });
@@ -5909,7 +5950,8 @@ function handleCsvFile(file) {
             "Дробове число": val => /^-?\d+(\.\d+)?$/.test(val),
             "Так/Ні": val => /^(true|false|1|0)$/i.test(val),
             "Текст": val => true,
-            "Дата": val => !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}$/.test(val)
+            "Дата": val => !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}$/.test(val),
+            "Список": val => true
         };
 
         for (let i = 0; i < dataRows.length; i++) {
@@ -6324,7 +6366,9 @@ function updateSchemaTableHeader(hasForeign) {
         const fkSubst = field.subst;
         
         console.log("fkSubst=",fkSubst)
-        const comment = field.comment || "";
+        const comment = field.type === "Список"
+            ? (field.options || []).join(", ")
+            : (field.comment || "");
 
         const tableSelectHtml = `
             <select onchange="updateFieldOptions(this)" ${isForeign ? "" : "disabled"}>
@@ -6351,13 +6395,14 @@ function updateSchemaTableHeader(hasForeign) {
         const cells = [
             `<td style="${pkCellStyle}"><input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}></td>`,
             `<td contenteditable="true">${field.title}</td>`,
-            `<td><select>
+            `<td><select onchange="handleTypeChange(this)">
                 <option ${selectedType === "Текст" ? "selected" : ""}>Текст</option>
                 <option ${selectedType === "Ціле число" ? "selected" : ""}>Ціле число</option>
                 <option ${selectedType === "Дробове число" ? "selected" : ""}>Дробове число</option>
                 <option ${selectedType === "Так/Ні" ? "selected" : ""}>Так/Ні</option>
                 <option ${selectedType === "Дата" ? "selected" : ""}>Дата</option>
                 <option ${selectedType === "Зображення" ? "selected" : ""}>Зображення</option>
+                <option ${selectedType === "Список" ? "selected" : ""}>Список</option>
             </select></td>`,
             `<td style="text-align:center;"><input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}></td>`,
         ];

@@ -17,7 +17,12 @@
     </script>
     <style>
     button {
-        font-family: 'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif;    
+        font-family: 'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif;
+    }
+    [contenteditable][placeholder]:empty::before {
+        content: attr(placeholder);
+        color: #aaa;
+        pointer-events: none;
     }
     </style>
 
