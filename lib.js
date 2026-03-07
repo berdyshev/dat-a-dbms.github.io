@@ -52,7 +52,11 @@ initSqlJs({
         locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
     }).then(SQLLib => {
         SQL = SQLLib;
-        //loadDatabase();
+        const last = localStorage.getItem('lastOpenedFile');
+        if (last && localStorage.getItem(last + '.db-data')) {
+            selectedDbFile = last;
+            loadSelectedDb();
+        }
     });
 /*
 initSqlJs({
@@ -411,6 +415,7 @@ function loadSelectedDb() {
     database.tables.forEach(t => addTableToMenu(t.name)); // 🔧 Оновити меню "Дані"
     Message("Базу даних '" + selectedDbFile + "' завантажено.");
     database.fileName = selectedDbFile;
+    localStorage.setItem('lastOpenedFile', selectedDbFile);
     closeStorageDialog();
     updateMainTitle();
 }
@@ -1279,9 +1284,10 @@ function saveDb() {
 
     }
     database.fileName = name;
+    localStorage.setItem('lastOpenedFile', name);
     saveDatabase();
 
-    
+
 
     closeDbModal();
     updateMainTitle();
@@ -2198,9 +2204,10 @@ function doDeleteDb() {
             
                     // Очистити всі змінні
                     db = null;
-                    clearDB();            
-                    updateMainTitle(); // Змінити заголовок на "Виберіть або створіть базу даних"                    
-                               
+                    localStorage.removeItem('lastOpenedFile');
+                    clearDB();
+                    updateMainTitle(); // Змінити заголовок на "Виберіть або створіть базу даних"
+
         }
 
         // Видалити дані бази та запити з localStorage
@@ -4326,6 +4333,7 @@ async function importDTA(file) {
     database.tables.forEach(t => addTableToMenu(t.name));
     queries.results.forEach(q => addTableToMenu(`*${q.name}`));
 
+    localStorage.setItem('lastOpenedFile', database.fileName);
     saveDatabase();
     Message("Базу даних успішно імпортовано з .dta файлу.");
     updateMainTitle();
@@ -6040,6 +6048,7 @@ function showDatabaseInfo() {
 
         // Очистити всі змінні
         db = null;
+        localStorage.removeItem('lastOpenedFile');
         clearDB();
         updateMainTitle(); // Змінити заголовок на "Виберіть або створіть базу даних"
         document.getElementById("import-table-link").style.display = "none";
