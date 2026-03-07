@@ -1743,7 +1743,7 @@ function saveSchema() {
 
         schema.push({
             primaryKey: isPrimaryKey,
-            autoInc: title===autoIncrement,
+            autoInc: type === 'Ціле число' && isPrimaryKey,
             title: title,
             type: type,
             comment: comment,
