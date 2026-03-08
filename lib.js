@@ -6280,14 +6280,14 @@ function updateSchemaTableHeader(hasForeign) {
 
     const headerRow = document.createElement("tr");
     headerRow.innerHTML = `
-        <th>🔑</th>
+        <th title="Первинний ключ">🔑</th>
         <th>Назва поля</th>
         <th>Тип</th>
-        <th>📌</th>
+        <th title="Зовнішній ключ">📌</th>
         <th id="refTableHeader">Таблиця 📌</th>
         <th id="refFieldHeader">Поле 📌</th>
         <th id="refSubstHeader">🛟</th>
-        <th>Коментар</th>
+        <th>Опис</th>
         <th>✂</th>
     `;
     thead.appendChild(headerRow);
