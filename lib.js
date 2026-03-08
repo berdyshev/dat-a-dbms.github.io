@@ -14,7 +14,8 @@ const SCHEMA_TYPES = [
   "Дробове число",
   "Так/Ні",
   "Дата",
-  "Зображення"
+  "Зображення",
+  "Список"
 ];
 
 let SQL = null;
@@ -591,6 +592,26 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
 
         container.appendChild(picker);
         createdEl = picker;
+    }
+    // ===== СПИСОК (dropdown) =====
+    else if (typeStr === "список") {
+        const select = document.createElement("select");
+        const opts = Array.isArray(col.options) ? col.options : [];
+        const emptyOpt = document.createElement("option");
+        emptyOpt.value = "";
+        emptyOpt.textContent = "(пусто)";
+        select.appendChild(emptyOpt);
+        opts.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            select.appendChild(o);
+        });
+        select.value = opts.includes(String(cellData)) ? String(cellData) : "";
+        select.disabled = !!isReadOnly;
+        container.appendChild(select);
+        createdEl = select;
+        select.addEventListener("change", () => { rowData[index] = select.value || null; });
     }
 	// ===== IMAGE (URL) =====
     else if (typeStr === "зображення" || typeStr === "image") {
@@ -1424,7 +1445,7 @@ function deleteSchemaRow(button) {
 function toggleForeignKeyHeaders() {
     const rows = document.querySelectorAll("#schemaBody tr");
     const anyChecked = Array.from(rows).some(row => {
-        const checkbox = row.cells[3]?.querySelector('input[type="checkbox"]');
+        const checkbox = row.querySelector('[data-role="fk"] input[type="checkbox"]');
         return checkbox?.checked;
     });
 
@@ -1457,37 +1478,37 @@ function addSchemaRow() {
 
     const tableOptions = tableList.map(t => `<option value="${t}">${t}</option>`).join("");
 
-    const anyChecked = Array.from(document.querySelectorAll('#schemaBody tr input[type="checkbox"]'))
-        .some(cb => cb.closest('td')?.cellIndex === 3 && cb.checked);
+    const anyChecked = Array.from(document.querySelectorAll('#schemaBody tr [data-role="fk"] input[type="checkbox"]'))
+        .some(cb => cb.checked);
 
     row.innerHTML = `
-        <td style="text-align:center;">
+        <td data-role="pk" style="text-align:center;">
             <input type="checkbox" onchange="handlePrimaryKey(this)">
         </td>
-        <td contenteditable="true"></td>
-        <td>
-            <select>
+        <td data-role="title" contenteditable="true"></td>
+        <td data-role="type">
+            <select onchange="handleTypeChange(this)">
                 ${SCHEMA_TYPES.map(t => `<option>${t}</option>`).join("")}
             </select>
         </td>
-        <td style="text-align:center;">
+        <td data-role="fk" style="text-align:center;">
             <input type="checkbox" onchange="handleForeignKey(this)">
         </td>
         ${anyChecked ? `
-            <td>
+            <td data-role="ref-table">
                 <select onchange="updateFieldOptions(this)">
                     <option value="">(таблиця)</option>
                     ${tableOptions}
                 </select>
             </td>
-            <td>
+            <td data-role="ref-field">
                 <select><option value="">(поле)</option></select>
             </td>
-            <td>
-                <input type="checkbox"
-            </td>    
+            <td data-role="ref-subst">
+                <input type="checkbox">
+            </td>
         ` : ''}
-        <td contenteditable="true"></td>
+        <td data-role="comment" contenteditable="true"></td>
         <td style="text-align:center;">
             <button onclick="deleteSchemaRow(this)">❌</button>
         </td>
@@ -1497,8 +1518,21 @@ function addSchemaRow() {
     toggleForeignKeyHeaders(); // гарантуємо правильний стан заголовків
 }
 
+function handleTypeChange(select) {
+    const row = select.closest("tr");
+    const commentCell = Array.from(row.querySelectorAll('[contenteditable]')).at(-1);
+    if (!commentCell) return;
+    if (select.value === "Список") {
+        commentCell.dataset.hint = "true";
+        if (!commentCell.innerText.trim()) commentCell.setAttribute("placeholder", "Варіант1, Варіант2, ...");
+    } else {
+        delete commentCell.dataset.hint;
+        commentCell.removeAttribute("placeholder");
+    }
+}
 
-    
+
+
 /**
 * Функція getFieldsForTable(tableName)
 * Призначення: Повертає список назв полів для заданої таблиці.
@@ -1534,9 +1568,8 @@ function getColumnName(checkbox) {
 **/
 function handlePrimaryKey(checkbox) {
     const row = checkbox.closest("tr");
-    const cells = row.cells;
-    const commentCell = cells[cells.length - 2];
-    const typeSelect = row.cells[2].querySelector("select");
+    const commentCell = row.querySelector('[data-role="comment"]');
+    const typeSelect = row.querySelector('[data-role="type"] select');
 
     if (checkbox.checked) {
         if (!commentCell.innerText.includes("Первинний ключ")) {
@@ -1609,17 +1642,16 @@ function handleForeignKey(checkbox) {
 
     // Чи є хоча б один увімкнений checkbox у всіх рядках
     const anyChecked = rows.some(row => {
-        const cb = row.cells[3]?.querySelector('input[type="checkbox"]');
+        const cb = row.querySelector('[data-role="fk"] input[type="checkbox"]');
         return !!cb?.checked;
     });
 
     rows.forEach(row => {
-        const cells = row.cells;
-        const hasForeignKeyColumns = cells.length > 6; // якщо >6 — значить є стовпчики ЗК
+        const hasForeignKeyColumns = !!row.querySelector('[data-role="ref-table"]');
 
         if (anyChecked && !hasForeignKeyColumns) {
-            // Додаємо стовпчики FK перед останніми двома (коментар + кнопка)
-            const commentCell = cells[cells.length - 2];
+            // Додаємо стовпчики FK перед коментарем
+            const commentCell = row.querySelector('[data-role="comment"]');
 
             const tableTd = document.createElement("td");
             const fieldTd = document.createElement("td");
@@ -1629,12 +1661,15 @@ function handleForeignKey(checkbox) {
                 .map(t => `<option value="${t}">${t}</option>`)
                 .join("");
 
+            tableTd.dataset.role = "ref-table";
             tableTd.innerHTML = `
                 <select onchange="updateFieldOptions(this)">
                     <option value="">(таблиця)</option>
                     ${tableOptions}
                 </select>`;
+            fieldTd.dataset.role = "ref-field";
             fieldTd.innerHTML = `<select><option value="">(поле)</option></select>`;
+            substTd.dataset.role = "ref-subst";
             substTd.innerHTML = `<input type="checkbox">`;
 
             row.insertBefore(tableTd, commentCell);
@@ -1642,12 +1677,10 @@ function handleForeignKey(checkbox) {
             row.insertBefore(substTd, commentCell);
 
         } else if (!anyChecked && hasForeignKeyColumns) {
-            // Видаляємо три комірки (підстановка, поле, таблиця) перед коментарем
-            const commentIndex = cells.length - 2;
-            // Видаляємо завжди з індексу commentIndex-1 тричі — після кожного deleteCell
-            row.deleteCell(commentIndex - 1); // підстановка
-            row.deleteCell(commentIndex - 1); // поле ЗК
-            row.deleteCell(commentIndex - 1); // таблиця ЗК
+            // Видаляємо три комірки FK за роллю (без зсуву індексів)
+            row.querySelector('[data-role="ref-subst"]')?.remove();
+            row.querySelector('[data-role="ref-field"]')?.remove();
+            row.querySelector('[data-role="ref-table"]')?.remove();
         }
     });
 
@@ -1680,7 +1713,7 @@ function handleForeignKey(checkbox) {
 */
 function updateFieldOptions(tableSelect) {
     const row = tableSelect.closest("tr");
-    const fieldSelect = row.cells[5].querySelector("select");
+    const fieldSelect = row.querySelector('[data-role="ref-field"] select');
     const selectedTable = tableSelect.value;
     console.log("selectedTable=",selectedTable)
     fieldSelect.innerHTML = `<option value="">Завантаження...</option>`;
@@ -1713,10 +1746,15 @@ function saveSchema() {
     let hasDuplicate = false;
 
     for (let row of rows) {
-        const isPrimaryKey = row.cells[0].querySelector("input").checked;
-        let title = row.cells[1].innerText.trim();
-        const type = row.cells[2].querySelector("select").value;
-        const comment = row.cells[3].innerText.trim();
+        const isPrimaryKey = row.querySelector('[data-role="pk"] input').checked;
+        let title = row.querySelector('[data-role="title"]').innerText.trim();
+        const type = row.querySelector('[data-role="type"] select').value;
+        const commentCell = row.querySelector('[data-role="comment"]');
+        const commentRaw = commentCell ? commentCell.innerText.trim() : "";
+        const options = type === "Список"
+            ? commentRaw.split(",").map(s => s.trim()).filter(Boolean)
+            : [];
+        const comment = type === "Список" ? "" : commentRaw;
 
         if (!title) continue;
 
@@ -1728,30 +1766,22 @@ function saveSchema() {
 
         fieldNames.add(lowerTitle);
 
-        let isForeignKey = false;
-        const fkCheckbox = row.cells[3].querySelector("input[type=checkbox]");
-        if (fkCheckbox) {
-            isForeignKey = fkCheckbox.checked;
-        }
+        const fkCheckbox = row.querySelector('[data-role="fk"] input[type=checkbox]');
+        const isForeignKey = fkCheckbox ? fkCheckbox.checked : false;
 
-        let refTable = null;
-        let refField = null;
-        let refSubst = false;
-
-        if (isForeignKey) {
-            const refTableSelect = row.cells[4]?.querySelector("select");
-            const refFieldSelect = row.cells[5]?.querySelector("select");
-            const refSubstCheck = row.cells[6]?.querySelector("input");
-            if (refTableSelect) refTable = refTableSelect.value || null;
-            if (refFieldSelect) refField = refFieldSelect.value || null;
-            if (refSubstCheck)  refSubst = refSubstCheck.checked;
-         }
+        const refTableSelect = row.querySelector('[data-role="ref-table"] select');
+        const refFieldSelect = row.querySelector('[data-role="ref-field"] select');
+        const refSubstCheck  = row.querySelector('[data-role="ref-subst"] input');
+        const refTable = refTableSelect?.value || null;
+        const refField = refFieldSelect?.value || null;
+        const refSubst = refSubstCheck?.checked ?? false;
 
         schema.push({
             primaryKey: isPrimaryKey,
             autoInc: type === 'Ціле число' && isPrimaryKey,
             title: title,
             type: type,
+            options: options,
             comment: comment,
             foreignKey: isForeignKey,
             refTable: isForeignKey ? refTable : null,
@@ -1822,6 +1852,7 @@ function saveSchema() {
         else if (type === "ТЕКСТ") type = "TEXT";
         else if (type === "ТАК/НІ") type = "BOOLEAN";
         else if (type === "ДАТА") type = "TEXT";
+        else if (type === "СПИСОК") type = "TEXT";
 
         return `"${field.title}" ${type}`;
     });
@@ -5917,7 +5948,8 @@ function handleCsvFile(file) {
             "Дробове число": val => /^-?\d+(\.\d+)?$/.test(val),
             "Так/Ні": val => /^(true|false|1|0)$/i.test(val),
             "Текст": val => true,
-            "Дата": val => !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}$/.test(val)
+            "Дата": val => !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}$/.test(val),
+            "Список": val => true
         };
 
         for (let i = 0; i < dataRows.length; i++) {
@@ -6257,14 +6289,14 @@ function updateSchemaTableHeader(hasForeign) {
 
     const headerRow = document.createElement("tr");
     headerRow.innerHTML = `
-        <th>🔑</th>
+        <th title="Первинний ключ">🔑</th>
         <th>Назва поля</th>
         <th>Тип</th>
-        <th>📌</th>
+        <th title="Зовнішній ключ">📌</th>
         <th id="refTableHeader">Таблиця 📌</th>
         <th id="refFieldHeader">Поле 📌</th>
         <th id="refSubstHeader">🛟</th>
-        <th>Коментар</th>
+        <th>Опис</th>
         <th>✂</th>
     `;
     thead.appendChild(headerRow);
@@ -6333,7 +6365,9 @@ function updateSchemaTableHeader(hasForeign) {
         const fkSubst = field.subst;
         
         console.log("fkSubst=",fkSubst)
-        const comment = field.comment || "";
+        const comment = field.type === "Список"
+            ? (field.options || []).join(", ")
+            : (field.comment || "");
 
         const tableSelectHtml = `
             <select onchange="updateFieldOptions(this)" ${isForeign ? "" : "disabled"}>
@@ -6358,27 +6392,28 @@ function updateSchemaTableHeader(hasForeign) {
 
         // Збір усіх комірок
         const cells = [
-            `<td style="${pkCellStyle}"><input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}></td>`,
-            `<td contenteditable="true">${field.title}</td>`,
-            `<td><select>
+            `<td data-role="pk" style="${pkCellStyle}"><input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}></td>`,
+            `<td data-role="title" contenteditable="true">${field.title}</td>`,
+            `<td data-role="type"><select onchange="handleTypeChange(this)">
                 <option ${selectedType === "Текст" ? "selected" : ""}>Текст</option>
                 <option ${selectedType === "Ціле число" ? "selected" : ""}>Ціле число</option>
                 <option ${selectedType === "Дробове число" ? "selected" : ""}>Дробове число</option>
                 <option ${selectedType === "Так/Ні" ? "selected" : ""}>Так/Ні</option>
                 <option ${selectedType === "Дата" ? "selected" : ""}>Дата</option>
                 <option ${selectedType === "Зображення" ? "selected" : ""}>Зображення</option>
+                <option ${selectedType === "Список" ? "selected" : ""}>Список</option>
             </select></td>`,
-            `<td style="text-align:center;"><input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}></td>`,
+            `<td data-role="fk" style="text-align:center;"><input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}></td>`,
         ];
 
         // FK стовпці
         if (hasForeign) {
-            cells.push(`<td>${tableSelectHtml}</td>`);
-            cells.push(`<td>${fieldSelectHtml}</td>`);
-            cells.push(`<td>${substHtm}</td>`);
+            cells.push(`<td data-role="ref-table">${tableSelectHtml}</td>`);
+            cells.push(`<td data-role="ref-field">${fieldSelectHtml}</td>`);
+            cells.push(`<td data-role="ref-subst">${substHtm}</td>`);
         }
 
-        cells.push(`<td contenteditable="true">${comment}</td>`);
+        cells.push(`<td data-role="comment" contenteditable="true">${comment}</td>`);
         cells.push(`<td style="text-align:center;"><button onclick="deleteSchemaRow(this)">❌</button></td>`);
 
         row.innerHTML = cells.join("");
