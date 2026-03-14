@@ -15,8 +15,68 @@ const SCHEMA_TYPES = [
   "Так/Ні",
   "Дата",
   "Зображення",
-  "Список"
+  "Список",
+  "Файл"
 ];
+
+// ===== IndexedDB wrapper =====
+const IDB_NAME = "data_a_db";
+const IDB_STORE = "databases";
+
+function openAppDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    });
+}
+
+async function idbSave(key, value) {
+    const idb = await openAppDB();
+    return new Promise((resolve, reject) => {
+        const tx = idb.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).put(value, key);
+        tx.oncomplete = resolve;
+        tx.onerror = e => reject(e.target.error);
+    });
+}
+
+async function idbLoad(key) {
+    const idb = await openAppDB();
+    return new Promise((resolve, reject) => {
+        const tx = idb.transaction(IDB_STORE, "readonly");
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = e => resolve(e.target.result ?? null);
+        req.onerror = e => reject(e.target.error);
+    });
+}
+
+async function idbDelete(key) {
+    const idb = await openAppDB();
+    return new Promise((resolve, reject) => {
+        const tx = idb.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).delete(key);
+        tx.oncomplete = resolve;
+        tx.onerror = e => reject(e.target.error);
+    });
+}
+
+// ===== File BLOB encode/decode =====
+function encodeFileBlob(name, type, arrayBuffer) {
+    const header = new TextEncoder().encode(JSON.stringify({ name, type }));
+    const result = new Uint8Array(4 + header.length + arrayBuffer.byteLength);
+    new DataView(result.buffer).setUint32(0, header.length);
+    result.set(header, 4);
+    result.set(new Uint8Array(arrayBuffer), 4 + header.length);
+    return result;
+}
+
+function decodeFileBlob(uint8array) {
+    const headerLen = new DataView(uint8array.buffer, uint8array.byteOffset).getUint32(0);
+    const header = JSON.parse(new TextDecoder().decode(uint8array.slice(4, 4 + headerLen)));
+    return { name: header.name, type: header.type, data: uint8array.slice(4 + headerLen) };
+}
 
 let SQL = null;
 let db = null;
@@ -51,12 +111,15 @@ closeAllModals();
 // Завантаження SQL.js
 initSqlJs({
         locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-    }).then(SQLLib => {
+    }).then(async SQLLib => {
         SQL = SQLLib;
         const last = localStorage.getItem('lastOpenedFile');
-        if (last && localStorage.getItem(last + '.db-data')) {
-            selectedDbFile = last;
-            loadSelectedDb();
+        if (last) {
+            const data = await idbLoad(last + '.db-data');
+            if (data) {
+                selectedDbFile = last;
+                await loadSelectedDb();
+            }
         }
     });
 /*
@@ -80,17 +143,15 @@ function getCurrentFormNames() {
       return (database.forms || []).map(f => f.name);
     }
        
-// Завантаження БД з localStorage або створення нової
-function loadDatabase() {
-        console.log("loadDatabase")        
+// Завантаження БД з IndexedDB або створення нової
+async function loadDatabase() {
+        console.log("loadDatabase")
         const name = database.fileName || "my_database";
-        const saved = localStorage.getItem(name + ".db-data");
+        const data = await idbLoad(name + ".db-data");
         console.log("name =",name)
-        
-        if (saved) {
-            const uIntArray = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
-            
-            db = new SQL.Database(uIntArray);
+
+        if (data) {
+            db = new SQL.Database(data);
             console.log("База даних завантажена: ",db);            
             // Завантажити запити тільки якщо є база
             const savedQueries = localStorage.getItem(name + ".queries-data");
@@ -156,15 +217,15 @@ function loadDatabase() {
     }
 
 
-// Збереження БД у localStorage
-function saveDatabase() {
-        console.log("Зберігаємо базу даних: ", database.fileName)        
+// Збереження БД у IndexedDB
+async function saveDatabase() {
+        console.log("Зберігаємо базу даних: ", database.fileName)
         if (!db) return;
-        const data = db.export();
-        const base64 = btoa(String.fromCharCode(...data));
-        localStorage.setItem(database.fileName + ".db-data", base64);       
+        await idbSave(database.fileName + ".db-data", db.export());
         console.log("Зберігаємо таблиці: ",database.tables)
-        localStorage.setItem(database.fileName + ".tables-data", JSON.stringify(database.tables));
+        localStorage.setItem(database.fileName + ".tables-data", JSON.stringify(
+            database.tables.map(({ data, ...rest }) => rest)
+        ));
         // Зберігаємо запити та їх результати
         console.log("Зберігаємо запити: ",queries.definitions)
         localStorage.setItem(database.fileName + ".queries-data", JSON.stringify(queries.definitions));
@@ -311,20 +372,19 @@ function showStorageDialog() {
         document.getElementById("storageModal").style.display = "none";
     }
 
-function loadSelectedDb() {
+async function loadSelectedDb() {
     if (!selectedDbFile) {
         Message("Виберіть файл бази даних.");
         return;
     }
-    
-    const saved = localStorage.getItem(selectedDbFile + ".db-data");
-    if (!saved) {
+
+    const data = await idbLoad(selectedDbFile + ".db-data");
+    if (!data) {
         Message("Файл не знайдено.");
         return;
     }
 
-    const uIntArray = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
-    db = new SQL.Database(uIntArray);
+    db = new SQL.Database(data);
 
     // Очистити database, queries та меню
     clearDB();
@@ -353,6 +413,7 @@ function loadSelectedDb() {
                     else if (type === "ТАК/НІ" || type === "BOOLEAN") type = "INTEGER";
                     else if (type === "ДАТА") type = "TEXT";
                     else if (type === "ЗОБРАЖЕННЯ" || type === "IMAGE") type = "TEXT";
+                    else if (type === "ФАЙЛ") type = "BLOB";
 
                     let def = `"${field.title}" ${type}`;
 
@@ -393,9 +454,9 @@ function loadSelectedDb() {
     }
     console.log("t.data=",database.tables)
 
-    // Load 
+    // Load
     database.fileName = selectedDbFile;
-    loadDatabase();
+    await loadDatabase();
 
     // 🔄 Автоматично додати зв’язки з foreign key
     database.relations = [];
@@ -651,7 +712,44 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         container.appendChild(btn);
         createdEl = btn;
     }
-        
+    // ===== FILE (BLOB) =====
+    else if (typeStr === "файл") {
+        const hasFile = cellData instanceof Uint8Array && cellData.length > 0;
+        const meta = hasFile ? decodeFileBlob(cellData) : null;
+
+        const btn = document.createElement("button");
+        btn.textContent = hasFile ? "📎" : "+";
+        btn.title = hasFile ? meta.name : "Додати файл";
+        btn.disabled = !!isReadOnly;
+
+        Object.assign(btn.style, {
+            border: "none",
+            background: "transparent",
+            font: "24px Arial, sans-serif",
+            cursor: isReadOnly ? "default" : "pointer",
+            padding: "0",
+            margin: "0",
+            outline: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%"
+        });
+
+        btn.onclick = () => {
+            if (isReadOnly) return;
+            openFileEditor(rowData[index], (val) => {
+                rowData[index] = val;
+                const newMeta = val ? decodeFileBlob(val) : null;
+                btn.textContent = val ? "📎" : "+";
+                btn.title = newMeta ? newMeta.name : "Додати файл";
+            });
+        };
+        container.appendChild(btn);
+        createdEl = btn;
+    }
+
     // ===== TEXT / NUMBER (contentEditable) =====
     else { 
         const editable = !isReadOnly && !isPKAuto;
@@ -1134,36 +1232,34 @@ function saveTableData() {
             valuesObj[col.title] = val;
         });
 
+        const colNames = Object.keys(valuesObj);
+        const colVals = Object.values(valuesObj);
+        const placeholders = colNames.map(() => "?").join(", ");
+        const quotedCols = colNames.map(k => `"${k}"`).join(", ");
+
         if (pkCols.length > 0) {
             // UPDATE або INSERT
-            const whereClauses = pkCols.map(pk => `"${pk}" = '${String(valuesObj[pk]).replace(/'/g, "''")}'`).join(" AND ");
+            const pkIdxs = pkCols.map(pk => colNames.indexOf(pk));
+            const whereClause = pkCols.map(pk => `"${pk}" = ?`).join(" AND ");
+            const pkVals = pkIdxs.map(i => colVals[i]);
             let exists = false;
 
             try {
-                const res = db.exec(`SELECT COUNT(*) as cnt FROM "${currentEditTable.name}" WHERE ${whereClauses};`);
+                const res = db.exec(`SELECT COUNT(*) FROM "${currentEditTable.name}" WHERE ${whereClause};`, pkVals);
                 exists = res.length && res[0].values[0][0] > 0;
             } catch (e) {
                 console.warn("Помилка перевірки існування PK:", e);
             }
 
             if (exists) {
-                const setClauses = Object.keys(valuesObj)
-                    .map(k => `"${k}" = '${String(valuesObj[k]).replace(/'/g, "''")}'`)
-                    .join(", ");
-                const updateSQL = `UPDATE "${currentEditTable.name}" SET ${setClauses} WHERE ${whereClauses};`;
-                db.run(updateSQL);
+                const setClause = colNames.map(k => `"${k}" = ?`).join(", ");
+                db.run(`UPDATE "${currentEditTable.name}" SET ${setClause} WHERE ${whereClause};`, [...colVals, ...pkVals]);
             } else {
-                const columns = Object.keys(valuesObj).map(k => `"${k}"`).join(", ");
-                const vals = Object.values(valuesObj).map(v => `'${String(v).replace(/'/g, "''")}'`).join(", ");
-                const insertSQL = `INSERT INTO "${currentEditTable.name}" (${columns}) VALUES (${vals});`;
-                db.run(insertSQL);
+                db.run(`INSERT INTO "${currentEditTable.name}" (${quotedCols}) VALUES (${placeholders});`, colVals);
             }
         } else {
             // Таблиця без PK
-            const columns = Object.keys(valuesObj).map(k => `"${k}"`).join(", ");
-            const vals = Object.values(valuesObj).map(v => `'${String(v).replace(/'/g, "''")}'`).join(", ");
-            const sql = `INSERT OR REPLACE INTO "${currentEditTable.name}" (${columns}) VALUES (${vals});`;
-            db.run(sql);
+            db.run(`INSERT OR REPLACE INTO "${currentEditTable.name}" (${quotedCols}) VALUES (${placeholders});`, colVals);
         }
     });
 
@@ -1853,6 +1949,7 @@ function saveSchema() {
         else if (type === "ТАК/НІ") type = "BOOLEAN";
         else if (type === "ДАТА") type = "TEXT";
         else if (type === "СПИСОК") type = "TEXT";
+        else if (type === "ФАЙЛ") type = "BLOB";
 
         return `"${field.title}" ${type}`;
     });
@@ -2241,8 +2338,8 @@ function doDeleteDb() {
 
         }
 
-        // Видалити дані бази та запити з localStorage
-        localStorage.removeItem(dbToDelete + ".db-data");
+        // Видалити дані бази та запити
+        idbDelete(dbToDelete + ".db-data");
         localStorage.removeItem(dbToDelete + ".queries-data");
 
         Message(`Файл "${dbToDelete}" видалено.`); // Показати повідомлення
@@ -4340,7 +4437,8 @@ async function importDTA(file) {
                             type: typeRaw === "INTEGER" ? "Ціле число" :
                                   typeRaw === "REAL"    ? "Дробове число" :
                                   typeRaw === "BOOLEAN" ? "Так/Ні" :
-                                  typeRaw === "TEXT"    ? "Текст" : typeRaw,
+                                  typeRaw === "TEXT"    ? "Текст" :
+                                  typeRaw === "BLOB"    ? "Файл" : typeRaw,
                             primaryKey: rest.includes("PRIMARY") || rest.includes("PRIMARY KEY"),
                             comment: rest.includes("PRIMARY") ? "Первинний ключ" : ""
                         };
@@ -5704,20 +5802,19 @@ function createNewRecord() {
 
         const reader = new FileReader();
     
-        reader.onload = function(event) {
+        reader.onload = async function(event) {
             const arrayBuffer = event.target.result;
             const uIntArray = new Uint8Array(arrayBuffer);
-    
+
             try {
                 clearDB();
                 const importedDb = new SQL.Database(uIntArray);
-                
+
                 const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
                 const fileName = nameWithoutExt;
-    
-                // Зберігаємо файл в localStorage
-                const base64 = btoa(String.fromCharCode(...uIntArray));
-                localStorage.setItem(fileName + ".db-data", base64);    
+
+                // Зберігаємо файл в IndexedDB
+                await idbSave(fileName + ".db-data", uIntArray);
                
                 db = importedDb;    
     
@@ -5747,6 +5844,7 @@ function createNewRecord() {
                                     : type.toUpperCase() === "REAL" ? "Дробове число"
                                     : type.toUpperCase().includes("TEXT") ? "Текст"
                                     : type.toUpperCase().includes("BOOL") ? "Так/Ні"
+                                    : type.toUpperCase() === "BLOB" ? "Файл"
                                     : type,
                                 primaryKey: pk > 0,
                                 comment: pk > 0 ? "Первинний ключ" : "",
@@ -6395,13 +6493,7 @@ function updateSchemaTableHeader(hasForeign) {
             `<td data-role="pk" style="${pkCellStyle}"><input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}></td>`,
             `<td data-role="title" contenteditable="true">${field.title}</td>`,
             `<td data-role="type"><select onchange="handleTypeChange(this)">
-                <option ${selectedType === "Текст" ? "selected" : ""}>Текст</option>
-                <option ${selectedType === "Ціле число" ? "selected" : ""}>Ціле число</option>
-                <option ${selectedType === "Дробове число" ? "selected" : ""}>Дробове число</option>
-                <option ${selectedType === "Так/Ні" ? "selected" : ""}>Так/Ні</option>
-                <option ${selectedType === "Дата" ? "selected" : ""}>Дата</option>
-                <option ${selectedType === "Зображення" ? "selected" : ""}>Зображення</option>
-                <option ${selectedType === "Список" ? "selected" : ""}>Список</option>
+                ${SCHEMA_TYPES.map(t => `<option ${t === selectedType ? "selected" : ""}>${t}</option>`).join("")}
             </select></td>`,
             `<td data-role="fk" style="text-align:center;"><input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}></td>`,
         ];
@@ -7382,5 +7474,112 @@ function previewImageFromUrl() {
 function closeImageModal() {
   document.getElementById("imageModal").style.display = "none";
   imageEditContext = null;
+}
+
+// ===== File modal =====
+let fileEditContext = null;
+
+function openFileEditor(currentData, onChange) {
+    fileEditContext = { onChange, currentData };
+    const hasFile = currentData instanceof Uint8Array && currentData.length > 0;
+    const imgPreview = document.getElementById("fileImagePreview");
+    const docPreview = document.getElementById("fileDocPreview");
+    const docName = document.getElementById("fileDocName");
+
+    imgPreview.style.display = "none";
+    docPreview.style.display = "none";
+    document.getElementById("fileViewBtn").style.display = "none";
+    document.getElementById("fileDownloadBtn").style.display = hasFile ? "flex" : "none";
+
+    if (hasFile) {
+        const { name, type, data } = decodeFileBlob(currentData);
+        docName.textContent = name;
+        if (type.startsWith("image/")) {
+            const blob = new Blob([data], { type });
+            imgPreview.src = URL.createObjectURL(blob);
+            imgPreview.style.display = "block";
+            document.getElementById("fileViewBtn").style.display = "flex";
+        } else {
+            docPreview.style.display = "flex";
+            document.getElementById("fileViewBtn").style.display = "flex";
+        }
+    } else {
+        docPreview.style.display = "flex";
+        docName.textContent = "Файл не вибрано";
+    }
+
+    document.getElementById("fileModal").style.display = "flex";
+}
+
+function previewSelectedFile() {
+    const input = document.getElementById("fileInput");
+    const file = input.files[0];
+    if (!file) return;
+
+    const imgPreview = document.getElementById("fileImagePreview");
+    const docPreview = document.getElementById("fileDocPreview");
+    const docName = document.getElementById("fileDocName");
+    const warning = document.getElementById("fileSizeWarning");
+
+    warning.style.display = file.size > 5 * 1024 * 1024 ? "block" : "none";
+
+    docName.textContent = file.name;
+
+    if (file.type.startsWith("image/")) {
+        const url = URL.createObjectURL(file);
+        if (imgPreview.src.startsWith("blob:")) URL.revokeObjectURL(imgPreview.src);
+        imgPreview.src = url;
+        imgPreview.style.display = "block";
+        docPreview.style.display = "none";
+    } else {
+        imgPreview.style.display = "none";
+        docPreview.style.display = "flex";
+    }
+}
+
+async function saveFileFromInput() {
+    const input = document.getElementById("fileInput");
+    if (!input.files[0]) { closeFileModal(); return; }
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+        document.getElementById("fileSizeWarning").style.display = "block";
+        return;
+    }
+    const buffer = await file.arrayBuffer();
+    const encoded = encodeFileBlob(file.name, file.type, buffer);
+    fileEditContext.onChange(encoded);
+    closeFileModal();
+}
+
+function viewCurrentFile() {
+    const { name, type, data } = decodeFileBlob(fileEditContext.currentData);
+    const blob = new Blob([data], { type });
+    const url = URL.createObjectURL(blob);
+    window.open(url);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function downloadCurrentFile() {
+    const { name, type, data } = decodeFileBlob(fileEditContext.currentData);
+    const blob = new Blob([data], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+}
+
+function deleteCurrentFile() {
+    fileEditContext.onChange(null);
+    closeFileModal();
+}
+
+function closeFileModal() {
+    const img = document.getElementById("fileImagePreview");
+    if (img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
+    img.src = "";
+    document.getElementById("fileInput").value = "";
+    document.getElementById("fileSizeWarning").style.display = "none";
+    document.getElementById("fileModal").style.display = "none";
+    fileEditContext = null;
 }
 
