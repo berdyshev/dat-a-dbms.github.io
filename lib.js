@@ -1070,6 +1070,10 @@ function deleteSelectedRow() {
         try {
             db.run(sql);
             row.remove();
+            const dataIdx = currentEditTable.data.findIndex(rowArr =>
+                pkCols.every(pk => String(rowArr[pk.index]) === cells[pk.index].innerText.trim())
+            );
+            if (dataIdx !== -1) currentEditTable.data.splice(dataIdx, 1);
             saveDatabase();
         } catch (e) {
             Message("Помилка видалення: " + e.message);
