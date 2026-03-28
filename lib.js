@@ -787,6 +787,18 @@ function editData(tableName) {
         ? `Результати запиту ${table.name.slice(5)}`
         : `Записи таблиці "${table.name}"`;
 
+    const editQueryInfo = document.getElementById("editQueryInfo");
+    if (isQueryTable) {
+        const queryRawName = table.name.replace(/^запит "/, '').replace(/"$/, '');
+        const queryDef = queries.definitions.find(q => q.name === queryRawName);
+        document.getElementById("editRowCount").innerText = `Знайдено записів: ${rows.length}`;
+        document.getElementById("editSqlText").innerText = queryDef?.sql || '';
+        document.getElementById("sqlDetails").removeAttribute("open");
+        editQueryInfo.style.display = "block";
+    } else {
+        editQueryInfo.style.display = "none";
+    }
+
     const head = document.getElementById("editHead");
     const body = document.getElementById("editBody");
     head.innerHTML = "";
@@ -2699,8 +2711,7 @@ function generateSqlQuery() {
     saveDatabase();
     console.log("queryConfig=",queryDefinition )
     document.getElementById("generatedSql").innerText = sql;
-    document.getElementById("sqlModal").style.display = "flex";
-    toggleStructureButtonVisibility(true)
+    runSqlQuery(sql, queryName);
 }
 
 
@@ -2761,7 +2772,7 @@ function executeSqlQuery() {
 
 /**
  * Виконати користувацький SQL-запит
- **/ 
+ **/
 function executeOwnSQL() {
     sqlQuery = document.getElementById("ownSqlInput").value.trim();
     queryName = document.getElementById("ownSQLName").value.trim();
@@ -2884,16 +2895,10 @@ function runFinalSqlQuery() {
                 queries.results.push(queryResultTable);
             }
             
-            if (isAggregateQuery) {
-                    Message("Запит виконано успішно. Отримано сукупний результат.");
-            } else {
-                    Message(`Запит виконано успішно.\nЗнайдено ${dataRows.length} відповідних записів`);                   
-            }
-            addTableToMenu(menuDisplayName);           
-            
+            addTableToMenu(menuDisplayName);
+
             closeSqlModal();
-            closeQueryModal();
-            closeOwnSqlModal() 
+            closeOwnSqlModal();
             editData(menuDisplayName);
         } else {
             Message("Запит виконано, але результат порожній.");
