@@ -2710,7 +2710,6 @@ function generateSqlQuery() {
     else queries.definitions.push(queryDefinition);
     saveDatabase();
     console.log("queryConfig=",queryDefinition )
-    document.getElementById("generatedSql").innerText = sql;
     runSqlQuery(sql, queryName);
 }
 
@@ -2722,11 +2721,6 @@ function generateSqlQuery() {
 
     
 
-
-    function closeSqlModal() {
-        document.getElementById("sqlModal").style.display = "none";
-        toggleStructureButtonVisibility(false)
-    }
 
     let pendingQueryText = "";
     let pendingPlaceholders = [];
@@ -2762,13 +2756,6 @@ function generateSqlQuery() {
     }
     
 
-function executeSqlQuery() {
-    console.log("executeSqlQuery")
-    sqlQuery = document.getElementById("generatedSql").innerText;
-    queryName = document.getElementById("queryName").value.trim();
-    isOwnSQL = false;
-    runSqlQuery(sqlQuery, queryName); 
-}
 
 /**
  * Виконати користувацький SQL-запит
@@ -2897,12 +2884,10 @@ function runFinalSqlQuery() {
             
             addTableToMenu(menuDisplayName);
 
-            closeSqlModal();
             closeOwnSqlModal();
             editData(menuDisplayName);
         } else {
             Message("Запит виконано, але результат порожній.");
-            closeSqlModal();
         }
         updateQuickAccessPanel(
                   getCurrentTableNames(),
@@ -2983,10 +2968,8 @@ function runFinalSqlQuery() {
             return;
         }
     
-        document.getElementById("queryName").value = queryDef.name;
-        document.getElementById("generatedSql").innerText = queryDef.sql;
         closeSavedQueriesDialog();
-        executeSqlQuery();
+        runSqlQuery(queryDef.sql, queryDef.name);
     }
 function onFromTableChange() {
     const tableName = document.getElementById("fromTable").value;
@@ -6786,7 +6769,6 @@ window.addEventListener("click", function(event) {
 
     // Якщо це ownSqlModal — не закриваємо
     if (event.target.id === "ownSqlModal") return; ""
-    if (event.target.id === "sqlModal") return;
     // Для всіх інших модалей — закриваємо
     event.target.style.display = "none";
   }
@@ -7309,7 +7291,6 @@ function toggleStructurePanel() {
     }
 }
 
-// Примусово приховати панель (наприклад, при закритті sqlModal)
 function hideStructurePanel() {
     const panel = document.getElementById("structurePanel");
     panel.style.right = "-300px";
