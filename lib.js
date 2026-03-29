@@ -2342,27 +2342,29 @@ function doDeleteDb() {
     if (dbToDelete) {
         // Якщо видаляється поточна база даних — спочатку її закриваємо
         if (dbToDelete === database.fileName) {
-                    // Очистити поточну базу, обнулити структуру, UI тощо           
-                    // Автоматично зберегти перед закриттям
-                    saveDatabase();
-            
-                    // Очистити всі змінні
-                    db = null;
-                    localStorage.removeItem('lastOpenedFile');
-                    clearDB();
-                    updateMainTitle(); // Змінити заголовок на "Виберіть або створіть базу даних"
-
+            saveDatabase();
+            db = null;
+            localStorage.removeItem('lastOpenedFile');
+            clearDB();
+            updateMainTitle();
         }
 
-        // Видалити дані бази та запити
+        // Видалити з IndexedDB
         idbDelete(dbToDelete + ".db-data");
+
+        // Видалити всі пов'язані ключі з localStorage
+        localStorage.removeItem(dbToDelete + ".db-data");        // ← ключовий рядок!
+        localStorage.removeItem(dbToDelete + ".tables-data");
         localStorage.removeItem(dbToDelete + ".queries-data");
+        localStorage.removeItem(dbToDelete + ".query-results");
+        localStorage.removeItem(dbToDelete + ".reports-data");
+        localStorage.removeItem(dbToDelete + ".forms-data");
+        localStorage.removeItem(dbToDelete + ".relations-data");
 
-        Message(`Файл "${dbToDelete}" видалено.`); // Показати повідомлення
-
-        closeDeleteModal();     // Закрити підтвердження
-        closeStorageDialog();   // Закрити список
-        showStorageDialog();    // Оновити список
+        Message(`Файл "${dbToDelete}" видалено.`);
+        closeDeleteModal();
+        closeStorageDialog();
+        showStorageDialog();    // тепер список оновиться коректно
     }
 }
 
