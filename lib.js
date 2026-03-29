@@ -178,10 +178,10 @@ function saveDatabase() {
         // Зберігаємо форми
         localStorage.setItem(database.fileName + ".forms-data", JSON.stringify(database.forms || []));
         console.log("Зберігаємо форми: ",database.forms)
-        // Зберігаємо зв'язки
-        resetNonReadonlyRelations();
-        console.log("Зберігаємо зв'язки: ",database.relations)
-        localStorage.setItem(database.fileName + ".relations-data", JSON.stringify(database.relations || []));
+        // Зберігаємо зв'язки (тільки readonly — FK-зв'язки)
+        const relationsToSave = (database.relations || []).filter(r => r.readonly === true);
+        console.log("Зберігаємо зв'язки: ", relationsToSave)
+        localStorage.setItem(database.fileName + ".relations-data", JSON.stringify(relationsToSave));
         
         console.log("База даних збережена у localStorage");
         document.getElementById("import-table-link").style.display = "block";
@@ -1070,6 +1070,10 @@ function deleteSelectedRow() {
         try {
             db.run(sql);
             row.remove();
+            const dataIdx = currentEditTable.data.findIndex(rowArr =>
+                pkCols.every(pk => String(rowArr[pk.index]) === cells[pk.index].innerText.trim())
+            );
+            if (dataIdx !== -1) currentEditTable.data.splice(dataIdx, 1);
             saveDatabase();
         } catch (e) {
             Message("Помилка видалення: " + e.message);
@@ -2266,7 +2270,6 @@ function closeDeleteModal() {
 function resetNonReadonlyRelations() {
     if (!Array.isArray(database.relations)) return;
     database.relations = database.relations.filter(r => r.readonly === true);
-    document.querySelectorAll("select.join-table-a, select.join-table-b").forEach(el => el.remove());
    
 }
  
