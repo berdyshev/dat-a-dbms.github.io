@@ -40,55 +40,90 @@ function createQuery() {
  * Додає новий рядок до конструктора запиту
  * Рядок містить вибір таблиці, поля, видимість, сортування, фільтр
  **/
+function fillSortSelect(select) {
+    [
+        { value: "",     key: "sortNone" },
+        { value: "ASC",  key: "sortAsc"  },
+        { value: "DESC", key: "sortDesc" },
+    ].forEach(({ value, key }) => {
+        const opt = document.createElement("option");
+        opt.value = value;        
+        opt.textContent = t(key);
+        select.appendChild(opt);
+    });
+}
+
+function fillOperatorSelect(select) {
+    [
+        { value: "==",          key: "opEqual"      },
+        { value: "<",           key: "opLess"        },
+        { value: "<=",          key: "opLessEq"      },
+        { value: ">",           key: "opGreater"     },
+        { value: ">=",          key: "opGreaterEq"   },
+        { value: "!=",          key: "opNotEq"       },
+        { value: "LIKE",        key: "opLike"        },
+        { value: "IN",          key: "opIn"          },
+        { value: "NOT IN",      key: "opNotIn"       },
+        { value: "BETWEEN",     key: "opBetween"     },
+        { value: "NOT BETWEEN", key: "opNotBetween"  },
+    ].forEach(({ value, key }) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = value;
+        opt.title = t(key);
+        select.appendChild(opt);
+    });
+}
+
+function fillRoleSelect(select) {
+    select.title = t("roleParticipation");
+    [
+        { value: "select", label: "----",  key: null          },
+        { value: "count",  label: "COUNT", key: "roleCount"   },
+        { value: "sum",    label: "SUM",   key: "roleSum"     },
+        { value: "avg",    label: "AVG",   key: "roleAvg"     },
+        { value: "min",    label: "MIN",   key: "roleMin"     },
+        { value: "max",    label: "MAX",   key: "roleMax"     },
+    ].forEach(({ value, label, key }) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = label;
+        if (key) opt.title = t(key);
+        select.appendChild(opt);
+    });
+}
+
 function addQueryRow() {
     const tbody = document.getElementById("queryBody");
     const row = document.createElement("tr");
-
+    
     row.innerHTML = `
         <td><select class="query-table-select" onchange="populateFieldDropdown(this)"></select></td>
         <td><select class="query-field-select"></select></td>
         <td><input type="checkbox" checked class="query-visible-checkbox"></td>
-        <td>
-            <select class="query-sort-select">
-                <option value="">\${t("sortNone")}</option>
-                <option value="ASC">\${t("sortAsc")}</option>
-                <option value="DESC">\${t("sortDesc")}</option>
-            </select>
-        </td>
+        <td><select class="query-sort-select"></select></td>
         <td>
             <div style="display: flex; gap: 4px; align-items: center;">
-                <select class="query-operator-select" style="width: 60px;">
-                    <option ${t("opEqual") ? `title="${t("opEqual")}"` : ""} value="==">==</option>
-                    <option ${t("opLess") ? `title="${t("opLess")}"` : ""} value="<">&lt;</option>
-                    <option ${t("opLessEq") ? `title="${t("opLessEq")}"` : ""} value="<=">&lt;=</option>
-                    <option ${t("opGreater") ? `title="${t("opGreater")}"` : ""} value=">">&gt;</option>
-                    <option ${t("opGreaterEq") ? `title="${t("opGreaterEq")}"` : ""} value=">=">&gt;=</option>
-                    <option ${t("opNotEq") ? `title="${t("opNotEq")}"` : ""} value="!=">!=</option>
-                    <option ${t("opLike") ? `title="${t("opLike")}"` : ""} value="LIKE">LIKE</option>
-                    <option ${t("opIn") ? `title="${t("opIn")}"` : ""} value="IN">IN</option>
-                    <option ${t("opNotIn") ? `title="${t("opNotIn")}"` : ""} value="NOT IN">NOT IN</option>
-                    <option ${t("opBetween") ? `title="${t("opBetween")}"` : ""} value="BETWEEN">BETWEEN</option>
-                    <option ${t("opNotBetween") ? `title="${t("opNotBetween")}"` : ""} value="NOT BETWEEN">NOT BETWEEN</option>
-                </select>
+                <select class="query-operator-select" style="width: 60px;"></select>
                 <input type="text" class="query-criteria-input" style="flex: 1;">
             </div>
         </td>
         <td>
-            <select class="query-field-role" ${`title="${t("roleParticipation")}"`} onchange="toggleAliasInput(this)">
-                <option value="select">----</option>               
-                <option ${`title="${t("roleCount")}"`} value="count">COUNT</option>
-                <option ${`title="${t("roleSum")}"`} value="sum">SUM</option>
-                <option ${`title="${t("roleAvg")}"`} value="avg">AVG</option>
-                <option ${`title="${t("roleMin")}"`} value="min">MIN</option>
-                <option ${`title="${t("roleMax")}"`} value="max">MAX</option>
-            </select>
-            <input type="text" class="query-alias-input" ${`placeholder="${t("queryAlias")}"`} style="margin-top:4px; display:none; width:100%;height:1.5em;">
+            <select class="query-field-role" onchange="toggleAliasInput(this)"></select>
+            <input type="text" class="query-alias-input" style="margin-top:4px; display:none; width:100%;height:1.5em;">
         </td>
         <td><select class="group-field-select"></select></td>
         <td><button onclick="deleteQueryRow(this)">❌</button></td>
     `;
 
     tbody.appendChild(row);
+
+    fillSortSelect(row.querySelector(".query-sort-select"));
+    fillOperatorSelect(row.querySelector(".query-operator-select"));
+    fillRoleSelect(row.querySelector(".query-field-role"));
+
+    row.querySelector(".query-alias-input").placeholder = t("queryAlias");
+
     populateTableDropdownsForRow(row);
 }
 
