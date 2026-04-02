@@ -14,30 +14,33 @@ const _placeholderCache = {};
 // ── Застосування перекладів до DOM ──────────────────────────────────────────
 
 function applyTranslationsToDOM(dict) {
-    // Текстовий вміст елементів
     document.querySelectorAll('[lang-i18n]').forEach(el => {
         const key = el.getAttribute('lang-i18n');
         if (!dict[key]) return;
 
-        // Якщо є дочірні елементи (наприклад, dropdown) — замінюємо лише перший текстовий вузол
-        if (el.querySelector('*')) {
-            for (const node of el.childNodes) {
-                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                    node.textContent = dict[key];
-                    break;
-                }
-            }
+        const nonTextChildren = [...el.childNodes].filter(
+            node => node.nodeType !== Node.TEXT_NODE
+        );
+
+        if (nonTextChildren.length > 0) {
+            [...el.childNodes].forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) node.remove();
+            });
+            const temp = document.createElement('template');
+            temp.innerHTML = dict[key];
+            el.insertBefore(temp.content, el.firstChild);
         } else {
             el.innerHTML = dict[key];
         }
     });
 
-    // title-атрибути
     document.querySelectorAll('[lang-i18n-title]').forEach(el => {
         const key = el.getAttribute('lang-i18n-title');
         if (dict[key]) el.title = dict[key];
     });
 }
+
+
 
 // ── Завантаження мови ────────────────────────────────────────────────────────
 
