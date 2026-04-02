@@ -372,36 +372,7 @@ async function showStorageDialog() {
 
     document.getElementById("storageModal").style.display = "flex";
 }
-/*
-function showStorageDialog() {
-        const listEl = document.getElementById("storageList");
-        listEl.innerHTML = "";
-        selectedDbFile = null;
 
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            console.log("db=",key)
-            if (key.endsWith(".db-data")) {
-                const fileName = key.replace(".db-data", "");
-                const li = document.createElement("li");
-                li.textContent = fileName;
-                li.style.padding = "8px";
-                li.style.cursor = "pointer";
-
-                li.addEventListener("click", () => {
-                    // зняти попереднє виділення
-                    [...listEl.children].forEach(el => el.style.background = "");
-                    li.style.background = "#d0e0ff";
-                    selectedDbFile = fileName;
-                });
-
-                listEl.appendChild(li);
-            }
-        }
-
-        document.getElementById("storageModal").style.display = "flex";
-    }
-*/
     function closeStorageDialog() {
         document.getElementById("storageModal").style.display = "none";
     }
