@@ -178,6 +178,7 @@
   "import": "Імпорт",
   "confirmImportTitle": "Підтвердження імпорту",
   "databaseStructureTitle": "Структура бази даних",
-  "download": "Скачати",
-  "fileSizeWarning": "⚠️ Файл перевищує ліміт 5 МБ"
+  "download": "Завантажити",
+  "fileSizeWarning": "Файл перевищує ліміт 5 МБ",
+  "storeFilesInDbCheckbox": "Зберігати файли і зображення в базі даних"
 }

@@ -519,3 +519,365 @@ input[type="date"] {
 #structureContent {
     background-color: #ffffff; /* стандартний колір */
 }
+/* ========== ТЕМНА ТЕМА ========== */
+
+/* ── CSS-змінні темної теми ── */
+body.dark-theme {
+    --dt-bg:          #1e1e1e;
+    --dt-surface:     #2d2d2d;
+    --dt-surface-alt: #252525;
+    --dt-surface-hi:  #3a3a3a;
+    --dt-surface-hi2: #4a4a4a;
+    --dt-border:      #444;
+    --dt-border-hi:   #555;
+    --dt-text:        #e0e0e0;
+    --dt-text-dim:    #c0c0c0;
+    --dt-text-muted:  #888;
+    --dt-accent:      #4a9eff;
+    --dt-accent-lo:   #6a9eff;
+    --dt-hover:       #3a3a3a;
+    --dt-canvas:      #2a2a2a;
+    --dt-input-bg:    #333;
+    --dt-selected-bg: #3a5a7a;
+}
+
+/* ── Загальне ── */
+body.dark-theme {
+    background-color: var(--dt-bg);
+    color: var(--dt-text);
+}
+body.dark-theme .menu-bar {
+    background-color: var(--dt-surface);
+    border-bottom: 1px solid var(--dt-border);
+}
+body.dark-theme .menu-item > span,
+body.dark-theme .menu-item { color: var(--dt-text); }
+body.dark-theme .dropdown {
+    background-color: var(--dt-surface);
+    border: 1px solid var(--dt-border);
+}
+body.dark-theme .dropdown a { color: var(--dt-text); }
+body.dark-theme .dropdown a:hover { background-color: var(--dt-hover); }
+body.dark-theme .title-bar {
+    background-color: var(--dt-surface);
+    color: var(--dt-text);
+}
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea,
+body.dark-theme button {
+    background-color: var(--dt-input-bg);
+    color: var(--dt-text);
+    border-color: var(--dt-border-hi);
+}
+
+/* ── Списки ── */
+body.dark-theme ul { background-color: var(--dt-surface); }
+body.dark-theme li {
+    background-color: var(--dt-surface);
+    color: var(--dt-text);
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+body.dark-theme li:hover { background-color: var(--dt-hover); }
+
+/* Виділений елемент у списках */
+body.dark-theme li.selected,
+body.dark-theme .selected-item,
+body.dark-theme .list-item.selected,
+body.dark-theme #storageList li.selected,
+body.dark-theme #savedQueriesList li.selected,
+body.dark-theme #savedTablesList li.selected,
+body.dark-theme #reportList li.selected,
+body.dark-theme #savedFormsList li.selected,
+body.dark-theme #dataWorkList li.selected {
+    background-color: var(--dt-accent) !important;
+    color: white !important;
+    border-left: 3px solid #ffaa00;
+}
+
+/* Списки з border-bottom (спільний патерн) */
+body.dark-theme #storageList li,
+body.dark-theme #savedTablesList li,
+body.dark-theme #savedQueriesList li,
+body.dark-theme #reportList li,
+body.dark-theme #savedFormsList li,
+body.dark-theme #dataWorkList li,
+body.dark-theme #tableListInModal li {
+    background-color: var(--dt-surface);
+    border-bottom: 1px solid var(--dt-hover);
+    padding: 10px;
+}
+body.dark-theme #storageList li:hover,
+body.dark-theme #savedTablesList li:hover,
+body.dark-theme #savedQueriesList li:hover,
+body.dark-theme #reportList li:hover,
+body.dark-theme #savedFormsList li:hover,
+body.dark-theme #dataWorkList li:hover,
+body.dark-theme #tableListInModal li:hover { background-color: var(--dt-hover); }
+body.dark-theme #tableListInModal li.selected {
+    background-color: var(--dt-accent) !important;
+    color: white !important;
+}
+
+/* ── Таблиці ── */
+body.dark-theme table {
+    background-color: var(--dt-surface-alt);
+    color: var(--dt-text);
+    border-color: var(--dt-border);
+}
+body.dark-theme th,
+body.dark-theme thead th,
+body.dark-theme .query-table th,
+body.dark-theme #schemaTable th,
+body.dark-theme #editTable th,
+body.dark-theme #dataViewTable th,
+body.dark-theme #editHead th,
+body.dark-theme #dataViewHead th,
+body.dark-theme .table-header {
+    background-color: var(--dt-surface-hi) !important;
+    color: var(--dt-text) !important;
+    border-color: var(--dt-border-hi) !important;
+    font-weight: bold;
+}
+body.dark-theme td,
+body.dark-theme tbody td,
+body.dark-theme .query-table td,
+body.dark-theme #schemaTable td,
+body.dark-theme #editTable td,
+body.dark-theme #dataViewTable td,
+body.dark-theme #editBody td,
+body.dark-theme #dataViewBody td {
+    background-color: var(--dt-surface);
+    color: var(--dt-text);
+    border-color: var(--dt-border);
+}
+body.dark-theme th.pk,
+body.dark-theme td.pk {
+    background-color: var(--dt-surface-hi2) !important;
+    color: var(--dt-text) !important;
+}
+
+/* ── Модальні вікна ── */
+body.dark-theme #modal > div,
+body.dark-theme #dbModal > div,
+body.dark-theme #editModal > div,
+body.dark-theme #queryModal > div,
+body.dark-theme #reportCreatorModal > div,
+body.dark-theme #formCreatorModal > div,
+body.dark-theme #settingsModal > div,
+body.dark-theme #messageModal > div,
+body.dark-theme #storageModal > div,
+body.dark-theme #deleteModal > div,
+body.dark-theme #overwriteModal > div,
+body.dark-theme #savedQueriesModal > div,
+body.dark-theme #savedTablesModal > div,
+body.dark-theme #reportListModal > div,
+body.dark-theme #savedFormsModal > div,
+body.dark-theme #ownSqlModal > div,
+body.dark-theme #aboutModal > div,
+body.dark-theme #dataModal > div,
+body.dark-theme #dataWorkModal > div,
+body.dark-theme #dataViewModal > div,
+body.dark-theme #csvImportModal > div,
+body.dark-theme #importTableModal > div,
+body.dark-theme #confirmImportModal > div,
+body.dark-theme #fieldSelectionModal > div,
+body.dark-theme .modal-content,
+body.dark-theme [id$="Modal"] > div:not(.alert-modal-content) {
+    background-color: var(--dt-surface) !important;
+    color: var(--dt-text) !important;
+    border-color: var(--dt-border) !important;
+}
+body.dark-theme .modal-content h2,
+body.dark-theme .modal-content h3,
+body.dark-theme [id$="Modal"] h2,
+body.dark-theme [id$="Modal"] h3,
+body.dark-theme [id$="Modal"] label { color: var(--dt-text) !important; }
+body.dark-theme .alert-modal-content {
+    background-color: #3a2a2a !important;
+    color: var(--dt-text) !important;
+    border: 3px solid #ff5555 !important;
+}
+body.dark-theme #editLabelModal > div {
+    background-color: var(--dt-surface) !important;
+    border-color: var(--dt-border) !important;
+}
+body.dark-theme #editInput {
+    background-color: var(--dt-input-bg);
+    color: var(--dt-text);
+    border-color: var(--dt-border-hi);
+}
+
+/* ── relationCanvas ── */
+body.dark-theme #relationCanvas {
+    background-color: var(--dt-canvas) !important;
+    border: 1px solid var(--dt-border) !important;
+    position: relative;
+}
+body.dark-theme #relationCanvas svg { background-color: transparent; }
+body.dark-theme #relationCanvas svg line { stroke: var(--dt-text-muted) !important; }
+body.dark-theme #relationCanvas svg text { fill: var(--dt-text) !important; }
+body.dark-theme .relation-table {
+    background-color: var(--dt-surface) !important;
+    border: 1px solid var(--dt-border-hi) !important;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+body.dark-theme .relation-table .table-header {
+    background-color: var(--dt-surface-hi) !important;
+    color: var(--dt-text) !important;
+    padding: 8px;
+    border-bottom: 1px solid var(--dt-border-hi);
+    cursor: move;
+}
+body.dark-theme .relation-table .table-fields { padding: 5px; }
+body.dark-theme .relation-table .field-item {
+    padding: 4px 8px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 3px;
+    color: var(--dt-text);
+}
+body.dark-theme .relation-table .field-item:hover { background-color: #3a5a7a; }
+body.dark-theme .relation-table .field-item.pk-field {
+    color: var(--dt-accent);
+    font-weight: bold;
+}
+body.dark-theme .relation-table .field-item.fk-field { color: var(--dt-accent-lo); }
+
+/* ── structurePanel ── */
+body.dark-theme #structurePanel {
+    background-color: var(--dt-surface) !important;
+    border-left: 1px solid var(--dt-border) !important;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+}
+body.dark-theme #structurePanel > div:first-child {
+    background-color: var(--dt-surface-hi) !important;
+    color: var(--dt-text) !important;
+    border-bottom: 1px solid var(--dt-border-hi);
+}
+body.dark-theme #structureContent {
+    background-color: var(--dt-surface);
+    color: var(--dt-text);
+}
+body.dark-theme .db-table {
+    border-bottom: 1px solid var(--dt-border) !important;
+    margin-bottom: 12px;
+}
+body.dark-theme .db-table .table-header {
+    color: var(--dt-accent) !important;
+    cursor: pointer;
+    padding: 8px;
+    background-color: var(--dt-surface-hi);
+    border-radius: 4px;
+}
+body.dark-theme .db-table .table-header:hover { background-color: var(--dt-surface-hi2); }
+body.dark-theme .db-field {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--dt-hover);
+    color: var(--dt-text-dim);
+}
+body.dark-theme .db-field:hover { background-color: var(--dt-hover); }
+body.dark-theme .db-field .field-name {
+    color: var(--dt-text);
+    cursor: pointer;
+}
+body.dark-theme .db-field .field-name:hover { color: var(--dt-accent); }
+body.dark-theme .db-field small { color: var(--dt-text-muted) !important; }
+
+/* ── reportCanvas / formCanvas ── */
+body.dark-theme #reportCanvas,
+body.dark-theme #formCanvas,
+body.dark-theme #reportPreviewCanvas {
+    background-color: var(--dt-canvas) !important;
+    border: 1px solid var(--dt-border-hi) !important;
+}
+body.dark-theme .report-element,
+body.dark-theme .form-element {
+    border-color: #666 !important;
+    background-color: rgba(60,60,60,0.8) !important;
+}
+body.dark-theme .report-element .field-text,
+body.dark-theme .form-element .field-text { color: var(--dt-text) !important; }
+body.dark-theme .report-element.selected,
+body.dark-theme .form-element.selected { border: 2px solid var(--dt-accent) !important; }
+body.dark-theme #reportCanvas.grid-visible {
+    background-image:
+        repeating-linear-gradient(0deg,   #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px),
+        repeating-linear-gradient(90deg, #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px) !important;
+    background-size: 20px 20px !important;
+}
+body.dark-theme .report-label,
+body.dark-theme .form-label {
+    border-color: var(--dt-text-muted) !important;
+    background-color: rgba(100,100,100,0.5) !important;
+}
+body.dark-theme .report-field,
+body.dark-theme .form-field {
+    border-color: #2c6e2c !important;
+    background-color: rgba(40,80,40,0.3) !important;
+}
+
+/* ── Кнопки ── */
+body.dark-theme button.square-btn {
+    background-color: var(--dt-surface-hi);
+    border-color: var(--dt-border-hi);
+    color: var(--dt-text);
+}
+body.dark-theme button.square-btn:hover { background-color: var(--dt-surface-hi2); }
+
+/* ── Select / input options ── */
+body.dark-theme select option {
+    background-color: var(--dt-input-bg);
+    color: var(--dt-text);
+}
+
+/* ── Details / pre ── */
+body.dark-theme details { color: var(--dt-text); }
+body.dark-theme details pre {
+    background-color: var(--dt-bg) !important;
+    color: var(--dt-text) !important;
+}
+
+/* ── Фільтри ── */
+body.dark-theme #dataFilterCondition1,
+body.dark-theme #dataFilterCondition2,
+body.dark-theme #logicalOperator,
+body.dark-theme #dataFieldSelect {
+    background-color: var(--dt-input-bg);
+    color: var(--dt-text);
+    border-color: var(--dt-border-hi);
+}
+
+/* ── Різне ── */
+body.dark-theme input[type="radio"] { accent-color: var(--dt-accent); }
+body.dark-theme .selected-row {
+    outline: 2px solid var(--dt-accent);
+    outline-offset: -2px;
+}
+body.dark-theme td.selected {
+    background-color: var(--dt-selected-bg) !important;
+    border: 2px solid var(--dt-accent) !important;
+}
+body.dark-theme [contenteditable="true"] {
+    color: var(--dt-text);
+    background-color: var(--dt-surface-hi);
+}
+body.dark-theme .quick-icon {
+    background-color: var(--dt-surface-hi);
+    border-color: var(--dt-border-hi);
+}
+body.dark-theme .resize-handle { background-color: var(--dt-text-muted); }
+
+/* ── Скролбари ── */
+body.dark-theme ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.dark-theme ::-webkit-scrollbar-track { background: var(--dt-surface); }
+body.dark-theme ::-webkit-scrollbar-thumb {
+    background: var(--dt-border-hi);
+    border-radius: 5px;
+}
+body.dark-theme ::-webkit-scrollbar-thumb:hover { background: #777; }

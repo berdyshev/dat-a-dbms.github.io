@@ -7,7 +7,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
 
     const typeStr = String(col?.type || "").toLowerCase();
     const isPK = !!col?.primaryKey;
-    const isPKAuto = isPK && typeStr === "ціле число" && col?.autoInc === true;
+    const isPKAuto = isPK && typeStr === "integer" && col?.autoInc === true;
     const isForeignKey = !!(col && col.foreignKey && col.refTable && col.refField);
 
     // ===== хелпери для caret у contentEditable =====
@@ -53,16 +53,16 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         s = (s ?? "").toString().replace(/\r?\n/g, "");
         t = String(t || "").toLowerCase();
     
-        if (t === "текст") {
+        if (t === "text") {
             if (s.length > 64) s = s.slice(0, 64);
             return s;
         }
-        if (t === "ціле число") {
+        if (t === "integer") {
             s = s.replace(/[^\d-]/g, "").replace(/(?!^)-/g, "");
             if (s.startsWith("--")) s = "-" + s.slice(2);
             return s;
         }
-        if (t === "дробове число") {
+        if (t === "real") {
             s = s.replace(/[^\d.\-]/g, "")
                  .replace(/(?!^)-/g, "")
                  .replace(/(\..*)\./g, "$1");
@@ -114,7 +114,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         });
     }
     // ===== BOOLEAN =====
-    else if (typeStr === "так/ні" || typeStr === "boolean") {
+    else if (typeStr === "boolean") {
         const select = document.createElement("select");
         select.innerHTML = `<option value="1">${t("aeditYes")}</option><option value="0">${t("aeditNo")}</option>`;
         select.value = (cellData == 1) ? "1" : "0";
@@ -127,7 +127,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         });
     }
     // ===== DATE (замінено на кастомний віджет custom-date-picker) =====
-    else if (typeStr === "дата" || typeStr === "date") {
+    else if (typeStr === "date") {
         console.log("cellData=",cellData)
         // Створюємо кастомний віджет (припускається, що datepicker.js вже підключено)
         const picker = document.createElement("custom-date-picker");
@@ -170,7 +170,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         createdEl = picker;
     }
     // ===== СПИСОК (dropdown) =====
-    else if (typeStr === "список") {
+    else if (typeStr === "list") {
         const select = document.createElement("select");
         const opts = Array.isArray(col.options) ? col.options : [];
         const emptyOpt = document.createElement("option");
@@ -189,16 +189,25 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         createdEl = select;
         select.addEventListener("change", () => { rowData[index] = select.value || null; });
     }
-	// ===== IMAGE (URL) =====
-    else if (typeStr === "зображення" || typeStr === "image") {
+	// ===== IMAGE =====
+    // STORE_FILES_IN_DB = false → зберігається лише URL (рядок)
+    // STORE_FILES_IN_DB = true  → зберігається blob (Uint8Array)
+    else if (typeStr === "image") {
+        const storeInDb = localStorage.getItem("app_settings_storeFilesInDb") === "true";
+
         rowData[index] = cellData || null;
-    
+
         const btn = document.createElement("button");
-        const hasImage = !!rowData[index];
+
+        // Визначаємо, чи є вже збережене зображення залежно від режиму
+        const hasImage = storeInDb
+            ? (cellData instanceof Uint8Array && cellData.length > 0)
+            : !!cellData;
+
         btn.textContent = hasImage ? "🖼️" : "+";
         btn.disabled = !!isReadOnly;
-        btn.title = hasImage ? t("aeditImageView") : t("aeditImageAdd"); 
-    
+        btn.title = hasImage ? t("aeditImageView") : t("aeditImageAdd");
+
         Object.assign(btn.style, {
             border: "none",
             background: "transparent",
@@ -213,28 +222,50 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
             width: "100%",
             height: "100%"
         });
-    
+
         btn.onclick = () => {
             if (isReadOnly) return;
-            openImageEditor(col.title, rowData[index], (val) => {
-                rowData[index] = val;
-                const hasNewImage = !!val;
-                btn.textContent = hasNewImage ? "🖼️" : "+";
-                btn.title = hasNewImage ? t("aeditImageView") : t("aeditImageAdd");
-            });
+
+            if (storeInDb) {
+                // Режим blob: відкриваємо файловий редактор (як для типу "файл")
+                openFileEditor(rowData[index], (val) => {
+                    rowData[index] = val;
+                    const newMeta = val ? decodeFileBlob(val) : null;
+                    btn.textContent = val ? "🖼️" : "+";
+                    btn.title = newMeta ? newMeta.name : t("aeditImageAdd");
+                });
+            } else {
+                // Режим URL: відкриваємо редактор посилань на зображення
+                openImageEditor(col.title, rowData[index], (val) => {
+                    rowData[index] = val;
+                    const hasNewImage = !!val;
+                    btn.textContent = hasNewImage ? "🖼️" : "+";
+                    btn.title = hasNewImage ? t("aeditImageView") : t("aeditImageAdd");
+                });
+            }
         };
-    
+
         container.appendChild(btn);
         createdEl = btn;
     }
-    // ===== FILE (BLOB) =====
-    else if (typeStr === "файл") {
-        const hasFile = cellData instanceof Uint8Array && cellData.length > 0;
-        const meta = hasFile ? decodeFileBlob(cellData) : null;
+    // ===== FILE =====
+    // STORE_FILES_IN_DB = false → зберігається лише URL/шлях (рядок)
+    // STORE_FILES_IN_DB = true  → зберігається blob (Uint8Array)
+    else if (typeStr === "file") {
+        const storeInDb = localStorage.getItem("app_settings_storeFilesInDb") === "true";
+
+        // Визначаємо наявність файлу залежно від режиму
+        const hasFile = storeInDb
+            ? (cellData instanceof Uint8Array && cellData.length > 0)
+            : (typeof cellData === "string" && cellData.trim() !== "");
+
+        const meta = (storeInDb && hasFile) ? decodeFileBlob(cellData) : null;
 
         const btn = document.createElement("button");
         btn.textContent = hasFile ? "📎" : "+";
-        btn.title = hasFile ? meta.name : t("aeditFileAdd");
+        btn.title = hasFile
+            ? (storeInDb ? meta.name : cellData)
+            : t("aeditFileAdd");
         btn.disabled = !!isReadOnly;
 
         Object.assign(btn.style, {
@@ -254,13 +285,26 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
 
         btn.onclick = () => {
             if (isReadOnly) return;
-            openFileEditor(rowData[index], (val) => {
-                rowData[index] = val;
-                const newMeta = val ? decodeFileBlob(val) : null;
-                btn.textContent = val ? "📎" : "+";
-                btn.title = newMeta ? newMeta.name : t("aeditFileAdd");
-            });
+
+            if (storeInDb) {
+                // Режим blob: вибираємо файл і зберігаємо у вигляді Uint8Array
+                openFileEditor(rowData[index], (val) => {
+                    rowData[index] = val;
+                    const newMeta = val ? decodeFileBlob(val) : null;
+                    btn.textContent = val ? "📎" : "+";
+                    btn.title = newMeta ? newMeta.name : t("aeditFileAdd");
+                });
+            } else {
+                // Режим URL: вводимо/редагуємо посилання на файл
+                openUrlEditor(col.title, rowData[index], (val) => {
+                    rowData[index] = val || null;
+                    const hasNewFile = !!val;
+                    btn.textContent = hasNewFile ? "📎" : "+";
+                    btn.title = hasNewFile ? val : t("aeditFileAdd");
+                });
+            }
         };
+
         container.appendChild(btn);
         createdEl = btn;
     }
@@ -303,7 +347,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
                 const caret = getCaretOffset(container);
                 let newText = oldText;
                 
-                if (typeStr === "ціле число" || typeStr === "дробове число") {
+                if (typeStr === "integer" || typeStr === "real") {
                     newText = sanitizeByType(oldText, typeStr);
                 }
     
@@ -312,7 +356,7 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
                     setCaretOffset(container, Math.min(caret, newText.length));
                 }
     
-                if (typeStr === "ціле число" || typeStr === "дробове число") {
+                if (typeStr === "integer" || typeStr === "real") {
                     const n = newText === "" ? null : Number(newText);
                     rowData[index] = (n === null || Number.isNaN(n)) ? null : n;
                 } else {
@@ -562,7 +606,7 @@ function addDataRow() {
         let defaultValue = null;
 
         // Автоінкремент
-        if (col.primaryKey && col.type === "Ціле число" && col.autoInc === true) {
+        if (col.primaryKey && col.type.toLowerCase() === "integer" && col.autoInc === true) {
             let max = 0;
             currentEditTable.data.forEach(row => {
                 const val = parseInt(row[index]);

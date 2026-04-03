@@ -201,6 +201,43 @@ function previewImageFromUrl() {
         img.style.display = "none";
     }
 }
+// ===== URL editor (для типу "файл" у режимі STORE_FILES_IN_DB=false) =====
+let urlEditContext = null;
+
+function openUrlEditor(fieldName, currentValue, onChange) {
+    urlEditContext = { onChange };
+
+    const modal = document.getElementById("urlModal");
+    const input = document.getElementById("urlInput");
+    const label = document.getElementById("urlFieldName");
+
+    if (label) label.textContent = fieldName || "";
+    input.value = currentValue || "";
+
+    modal.style.display = "flex";
+}
+
+function saveFileUrl() {
+    const url = document.getElementById("urlInput").value.trim();
+    if (urlEditContext && typeof urlEditContext.onChange === "function") {
+        urlEditContext.onChange(url || null);
+    }
+    closeUrlModal();
+}
+
+function deleteFileUrl() {
+    if (urlEditContext && typeof urlEditContext.onChange === "function") {
+        urlEditContext.onChange(null);
+    }
+    closeUrlModal();
+}
+
+function closeUrlModal() {
+    document.getElementById("urlInput").value = "";
+    document.getElementById("urlModal").style.display = "none";
+    urlEditContext = null;
+}
+
 // ===== File modal =====
 let fileEditContext = null;
 
@@ -324,4 +361,48 @@ function closeFileModal() {
     document.getElementById("fileSizeWarning").style.display = "none";
     document.getElementById("fileModal").style.display = "none";
     fileEditContext = null;
+}
+
+function uint8ToBase64(uint8Array) {
+    let binary = "";
+    const len = uint8Array.length;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+    }
+    return btoa(binary);
+}
+
+/**
+ * Повертає об’єкт { data: Uint8Array, type: MIME } або null
+ */
+function extractImage(uint8Array) {
+    for (let i = 0; i < uint8Array.length - 3; i++) {
+        // PNG: 89 50 4E 47
+        if (
+            uint8Array[i] === 0x89 &&
+            uint8Array[i + 1] === 0x50 &&
+            uint8Array[i + 2] === 0x4E &&
+            uint8Array[i + 3] === 0x47
+        ) {
+            return { data: uint8Array.slice(i), type: "image/png" };
+        }
+        // JPG: FF D8 FF
+        if (
+            uint8Array[i] === 0xFF &&
+            uint8Array[i + 1] === 0xD8 &&
+            uint8Array[i + 2] === 0xFF
+        ) {
+            return { data: uint8Array.slice(i), type: "image/jpeg" };
+        }
+        // GIF: 47 49 46 38
+        if (
+            uint8Array[i] === 0x47 &&
+            uint8Array[i + 1] === 0x49 &&
+            uint8Array[i + 2] === 0x46 &&
+            uint8Array[i + 3] === 0x38
+        ) {
+            return { data: uint8Array.slice(i), type: "image/gif" };
+        }
+    }
+    return null;
 }

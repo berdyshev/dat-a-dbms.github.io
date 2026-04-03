@@ -1405,7 +1405,47 @@
 </div>
   </div>
 </div>
+<!-- Вікно URL файлу -->
+<div id="urlModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:20000; justify-content:center; align-items:center;">
+  <div style="background:white; width:480px; max-width:90%; max-height:90%; border-radius:12px; padding:15px; display:flex; flex-direction:column;">
 
+    <!-- Центральна частина: іконка + кнопки -->
+    <div style="flex:1; display:flex; gap:12px;">
+
+      <!-- Іконка файлу -->
+      <div style="flex:1; display:flex; justify-content:center; align-items:center; min-height:140px; border:1px solid #ccc;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; color:#aaa; font-size:48px;">
+          📎
+          <span style="font-size:13px;" id="urlFieldName"></span>
+        </div>
+      </div>
+
+      <!-- Кнопки справа -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+        <button onclick="saveFileUrl()" style="width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer;">
+          <div>💾</div>
+          <div style="font-size:11px;" lang-i18n="save">Зберегти</div>
+        </button>
+        <button onclick="deleteFileUrl()" style="width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer;">
+          <div>🗑</div>
+          <div style="font-size:11px;" lang-i18n="delete">Видалити</div>
+        </button>
+        <button onclick="closeUrlModal()" style="width:64px; height:64px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:24px; cursor:pointer;">
+          <div>❌</div>
+          <div style="font-size:11px;" lang-i18n="cancel">Скасувати</div>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Поле адреси внизу -->
+    <div style="margin-top:12px; display:flex; gap:6px; width:100%;">
+      <input id="urlInput" type="text" placeholder="https://example.com/file.pdf"
+             style="flex:1; padding:8px; box-sizing:border-box; height:40px;">
+    </div>
+
+  </div>
+</div>
 <!-- Вікно файлу -->
 <div id="fileModal" style="display:none; position:fixed; inset:0;
      background:rgba(0,0,0,.6); z-index:20000; justify-content:center; align-items:center;">
@@ -1440,7 +1480,7 @@
         <button id="fileDownloadBtn" onclick="downloadCurrentFile()"
                 style="width:64px; height:64px; padding:0; display:flex; flex-direction:column;
                        align-items:center; justify-content:center; font-size:24px; cursor:pointer;">
-          <div>⬇️</div><div style="font-size:11px;" lang-i18n="download">Скачати</div>
+          <div>⬇️</div><div style="font-size:9px;" lang-i18n="download">Скачати</div>
         </button>
         <button onclick="deleteCurrentFile()"
                 style="width:64px; height:64px; padding:0; display:flex; flex-direction:column;
@@ -1489,7 +1529,11 @@
                 <input type="checkbox" id="darkThemeCheckbox"> 
                 <span lang-i18n="darkThemeCheckbox">Темна тема</span>
             </label>
-            
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="storeFilesInDbCheckbox"> 
+                <span lang-i18n="storeFilesInDbCheckbox">Зберігати файли і зображення в базі даних</span>
+            </label>            
+   
             <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
                 <span lang-i18n="languageSelect" >Мова інтерфейсу:</span>
                 <select id="languageSelect" style="padding:5px; border-radius:4px; border:1px solid #ccc;">

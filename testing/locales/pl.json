@@ -1,4 +1,13 @@
 {
+  "text":"Tekst",
+  "integer":"Liczba całkowita",
+  "real":"Liczba rzeczywista",
+  "boolean":"Wartość logiczna",
+  "date":"Data",
+  "image":"Obraz",
+  "list":"Lista",
+  "file":"Plik",
+  "frmLastRec": ", ostatni rekord",	
   "nameLengthError": "Nazwa musi mieć od 2 do 32 znaków. ",
   "nameSpaceError": "Nazwa nie może zawierać spacji — użyj '_' zamiast. ",
   "nameStartError": "Nazwa musi zaczynać się od litery (łacińskiej lub cyrylickiej). ",
@@ -221,5 +230,6 @@
   "uiSelectOrCreate": "Wybierz lub Utwórz Bazę Danych",
   "ioPkChoiceLabel": "Wybierz pole klucza podstawowego:",
   "ioAddAutoId": "Dodaj nowe pole identyfikatora (liczba całkowita, autoinkrementacja)",
-  "ioTableCreateError": "Błąd podczas tworzenia tabeli"
+  "ioTableCreateError": "Błąd podczas tworzenia tabeli",
+  "queryNewQuery": "Nowe_zapytanie"
 }

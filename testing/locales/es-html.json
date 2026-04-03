@@ -179,5 +179,6 @@
   "confirmImportTitle": "Confirmar Importación",
   "databaseStructureTitle": "Estructura de la Base de Datos",
   "download": "Descargar",
-  "fileSizeWarning": "⚠️ El archivo excede el límite de 5 MB"
+  "fileSizeWarning": "El archivo excede el límite de 5 MB",
+  "storeFilesInDbCheckbox": "Almacenar archivos e imágenes en la base de datos"
 }

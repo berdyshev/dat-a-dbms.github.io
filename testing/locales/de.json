@@ -1,4 +1,13 @@
 {
+  "text": "Text",
+  "integer": "Ganzzahl",
+  "real": "Reale Zahl",
+  "boolean": "Boolesch",
+  "date": "Datum",
+  "image": "Bild",
+  "list": "Liste",
+  "file": "Datei",
+  "frmLastRec": ", letzter Datensatz",	
   "nameLengthError": "Name muss zwischen 2 und 32 Zeichen lang sein.",
   "nameSpaceError": "Name darf keine Leerzeichen enthalten — verwenden Sie stattdessen '_'.",
   "nameStartError": "Name muss mit einem Buchstaben beginnen (Lateinisch oder Kyrillisch).",
@@ -230,5 +239,6 @@
   "uiSelectOrCreate": "Datenbank auswählen oder erstellen",
   "ioPkChoiceLabel": "Primärschlüsselfeld auswählen:",
   "ioAddAutoId": "Neues ID-Feld hinzufügen (Ganzzahl, automatisch inkrementierend)",
-  "ioTableCreateError": "Fehler beim Erstellen der Tabelle"
+  "ioTableCreateError": "Fehler beim Erstellen der Tabelle",
+  "queryNewQuery": "Neue_Abfrage"
 }

@@ -134,8 +134,71 @@ function clearDB() {
 } 
  
 /**
- * Перевірка для імені файлу, таблиць та полів
- **/
+ * Нормалізує збережений тип поля до локалізованого рядка поточної мови.
+ * Підтримує: старі українські назви, англійські ключі, вже локалізовані рядки.
+ */
+function normalizeFieldType(rawType) {
+    if (!rawType) return SCHEMA_TYPES[0];
+    const upper = rawType.trim().toUpperCase();
+
+    // Таблиця відповідності: всі відомі варіанти → індекс у SCHEMA_TYPE_KEYS
+    const map = {
+        // text
+        "TEXT": 0, "ТЕКСТ": 0,
+        // integer
+        "INTEGER": 1, "ЦІЛЕ ЧИСЛО": 1, "INT": 1,
+        // real
+        "REAL": 2, "ДРОБОВЕ ЧИСЛО": 2, "REAL NUMBER": 2,
+        // boolean
+        "BOOLEAN": 3, "ТАК/НІ": 3, "YES/NO": 3,
+        // date
+        "DATE": 4, "ДАТА": 4,
+        // image
+        "IMAGE": 5, "ЗОБРАЖЕННЯ": 5,
+        // list
+        "LIST": 6, "СПИСОК": 6,
+        // file
+        "FILE": 7, "ФАЙЛ": 7,
+    };
+
+    const idx = map[upper];
+    if (idx !== undefined) return SCHEMA_TYPES[idx];
+
+    // Якщо вже збігається з поточним локалізованим рядком — повертаємо як є
+    if (SCHEMA_TYPES.includes(rawType)) return rawType;
+
+    return SCHEMA_TYPES[0]; // fallback → перший тип ("Текст")
+}
+
+/**
+ * Нормалізує збережений тип поля до внутрішнього англійського ключа (SCHEMA_TYPE_KEYS).
+ * Підтримує: старі українські назви, англійські ключі, вже локалізовані рядки.
+ */
+function normalizeFieldTypeKey(rawType) {
+    if (!rawType) return SCHEMA_TYPE_KEYS[0];
+    const upper = rawType.trim().toUpperCase();
+
+    const map = {
+        "TEXT": 0, "ТЕКСТ": 0,
+        "INTEGER": 1, "ЦІЛЕ ЧИСЛО": 1, "INT": 1,
+        "REAL": 2, "ДРОБОВЕ ЧИСЛО": 2, "REAL NUMBER": 2,
+        "BOOLEAN": 3, "ТАК/НІ": 3, "YES/NO": 3,
+        "DATE": 4, "ДАТА": 4,
+        "IMAGE": 5, "ЗОБРАЖЕННЯ": 5,
+        "LIST": 6, "СПИСОК": 6,
+        "FILE": 7, "ФАЙЛ": 7,
+    };
+
+    const idx = map[upper];
+    if (idx !== undefined) return SCHEMA_TYPE_KEYS[idx];
+
+    // Якщо вже є валідний ключ — повертаємо як є
+    if (SCHEMA_TYPE_KEYS.includes(rawType.toLowerCase())) return rawType.toLowerCase();
+
+    return SCHEMA_TYPE_KEYS[0]; // fallback → "text"
+}
+
+
  function checkName(name) {
     
     name = name.trim();
@@ -144,11 +207,11 @@ function clearDB() {
         Message(t("nameLengthError"));
         return false;
     }
-    // перевірка на наявність пропусків
+    /* перевірка на наявність пропусків
     if (/\s/.test(name)) {
         Message(t("nameSpaceError"));
         return false;
-    }
+    }*/
     // перевірка першого символу — літера (латиниця або кирилиця)
     const firstCharPattern = /^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ]$/;
     if (!firstCharPattern.test(name[0])) {
@@ -156,7 +219,7 @@ function clearDB() {
         return false;
     }
     // перевірка на допустимі символи
-    const allowedPattern = /^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ0-9\-_']+$/;
+    const allowedPattern = /^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ0-9\-_\' ]+$/;
     if (!allowedPattern.test(name)) {
         Message(t("nameInvalidChars"));
         return false;
@@ -253,7 +316,7 @@ function saveTableData() {
             if (typeStr === "REAL")    val = val === null ? "" : Number(val);
             if (typeStr === "BOOLEAN") val = val ? 1 : 0;
             // IMAGE/FILE зберігаємо як є (base64/url/blob)
-            if ((col.type || "").toLowerCase() === "зображення" || (col.type || "").toLowerCase() === "image") val = val ?? "";
+            if ((col.type || "").toLowerCase() === "image") val = val ?? "";
 
             valuesObj[col.title] = val;
         });
@@ -569,9 +632,11 @@ function addSchemaRow() {
         </td>
         <td data-role="title" contenteditable="true"></td>
         <td data-role="type">
-            <select onchange="handleTypeChange(this)">
-                ${SCHEMA_TYPES.map(t => `<option>${t}</option>`).join("")}
-            </select>
+			<select onchange="handleTypeChange(this)">
+				${SCHEMA_TYPE_KEYS.map(key => 
+        `		<option value="${key}">${t(key)}</option>`
+				).join("")}
+			</select>
         </td>
         <td data-role="fk" style="text-align:center;">
             <input type="checkbox" onchange="handleForeignKey(this)">
@@ -1397,13 +1462,13 @@ function updateSchemaTableHeader(hasForeign) {
             : 'text-align:center;';
                     
         const isForeign = field.foreignKey ? 'checked' : '';
-        const selectedType = field.type || t("schemaTypes")[0]; // "Текст" / "Text"
+        const selectedType = normalizeFieldTypeKey(field.type); // нормалізуємо до внутрішнього ключа для порівняння з SCHEMA_TYPE_KEYS
         const fkTable = field.refTable || "";
         const fkField = field.refField || "";
         const fkSubst = field.subst;
         
         console.log("fkSubst=",fkSubst)
-        const comment = (field.type === "Список" || field.type === "List")
+        const comment = (selectedType === "list")
             ? (field.options || []).join(", ")
             : (field.comment || "");
 
@@ -1430,12 +1495,25 @@ function updateSchemaTableHeader(hasForeign) {
 
         // Збір усіх комірок
         const cells = [
-            `<td data-role="pk" style="${pkCellStyle}"><input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}></td>`,
+            `<td data-role="pk" style="${pkCellStyle}">
+                <input type="checkbox" onchange="handlePrimaryKey(this)" ${isPrimary}>
+            </td>`,
+        
             `<td data-role="title" contenteditable="true">${field.title}</td>`,
-            `<td data-role="type"><select onchange="handleTypeChange(this)">
-                ${SCHEMA_TYPES.map(t => `<option ${t === selectedType ? "selected" : ""}>${t}</option>`).join("")}
-            </select></td>`,
-            `<td data-role="fk" style="text-align:center;"><input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}></td>`,
+        
+            `<td data-role="type">
+                <select onchange="handleTypeChange(this)">
+                    ${SCHEMA_TYPE_KEYS.map(key => `
+                        <option value="${key}" ${key === selectedType ? "selected" : ""}>
+                            ${t(key)}
+                        </option>
+                    `).join("")}
+                </select>
+            </td>`,
+        
+            `<td data-role="fk" style="text-align:center;">
+                <input type="checkbox" onchange="handleForeignKey(this)" ${isForeign}>
+            </td>`,
         ];
 
         // FK стовпці

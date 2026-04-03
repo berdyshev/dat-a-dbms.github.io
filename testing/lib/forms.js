@@ -236,9 +236,12 @@ function previewForm(form = null, resetIndex = false) {
     if (resetIndex) currentFormRecordIndex = 0;
     currentFormRecordIndex = Math.min(currentFormRecordIndex, maxRecordIndex < 0 ? 0 : maxRecordIndex);
     const isLastRecord = currentFormRecordIndex === maxRecordIndex;
-
+    let last =""
+    if (isLastRecord) {
+		last = ", last record"
+	}
     document.getElementById("formPreviewTitle").innerText =
-        t("formPreviewTitle", formName, currentFormRecordIndex + 1, isLastRecord);
+        t("formPreviewTitle", formName, currentFormRecordIndex + 1)+t(last);
 
     // ----------------- Рендеринг полів -----------------
     elements.forEach(el => {
@@ -338,8 +341,19 @@ function previewForm(form = null, resetIndex = false) {
             }
 
             // ---------- Логіка рендерингу (з урахуванням isReadOnly) ----------
-            if (colSchema && colSchema.type && String(colSchema.type).toLowerCase().includes("зображ")) {
-                // Поле IMAGE / Зображення
+            if (colSchema && colSchema.type && String(colSchema.type).toLowerCase().includes("image")) {
+                console.log("// Поле IMAGE / Зображення", cellValue)
+				if (cellValue instanceof Uint8Array) {
+					const imgData = extractImage(cellValue);
+
+					if (imgData) {
+						const blob = new Blob([imgData.data], { type: imgData.type });
+						cellValue = URL.createObjectURL(blob);
+					} else {
+						console.warn("Зображення не знайдено");
+					}
+				}
+				console.log("// Поле IMAGE ", cellValue)
                 fieldContainer.innerHTML = "";
                 const img = document.createElement("img");
                 img.src = cellValue || "";
@@ -354,18 +368,48 @@ function previewForm(form = null, resetIndex = false) {
                 
                 if (!isReadOnly) {
                     img.addEventListener("click", () => {
-                        openImageEditor(
-                            el.fieldName,
-                            cellValue,
-                            (newValue) => {
-                                img.src = newValue;
-                                // Оновлення даних тільки для таблиць, не для запитів
-                                if (!result.isQuery && colIndex !== -1 && tableData) {
-                                    const recordIndex = Math.min(currentFormRecordIndex, tableData.length - 1);
-                                    tableData[recordIndex][colIndex] = newValue;
+                        const storeInDb = localStorage.getItem("app_settings_storeFilesInDb") === "true";
+
+                        if (storeInDb) {
+                            // Режим зберігання файлу в БД — відкриваємо файловий редактор
+                            const recordIndex = Math.min(currentFormRecordIndex, tableData.length - 1);
+                            const currentData = (!result.isQuery && colIndex !== -1 && tableData)
+                                ? tableData[recordIndex][colIndex]
+                                : null;
+
+                            openFileEditor(
+                                currentData instanceof Uint8Array ? currentData : null,
+                                (newValue) => {
+                                    if (!result.isQuery && colIndex !== -1 && tableData) {
+                                        tableData[recordIndex][colIndex] = newValue;
+                                    }
+                                    // Відображаємо новий Uint8Array як blob-зображення
+                                    if (newValue instanceof Uint8Array && newValue.length > 0) {
+                                        const imgData = extractImage(newValue);
+                                        if (imgData) {
+                                            const blob = new Blob([imgData.data], { type: imgData.type });
+                                            if (img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
+                                            img.src = URL.createObjectURL(blob);
+                                        }
+                                    } else {
+                                        img.src = "";
+                                    }
                                 }
-                            }
-                        );
+                            );
+                        } else {
+                            // Режим URL — відкриваємо редактор URL зображення
+                            openImageEditor(
+                                el.fieldName,
+                                cellValue,
+                                (newValue) => {
+                                    img.src = newValue || "";
+                                    if (!result.isQuery && colIndex !== -1 && tableData) {
+                                        const recordIndex = Math.min(currentFormRecordIndex, tableData.length - 1);
+                                        tableData[recordIndex][colIndex] = newValue;
+                                    }
+                                }
+                            );
+                        }
                     });
                 }
                 fieldContainer.appendChild(img);
@@ -471,11 +515,18 @@ function saveFormChanges() {
         const fieldType = colSchema ? String(colSchema.type || "").trim().toLowerCase() : "";
         
         if (fieldType === "зображення" || fieldType === "image") {
-            const img = f.querySelector("img");
-            value = img ? img.src : "";
-            // Якщо src — це "default" або порожній — зробити null
-            if (!value || value === window.location.href || value === "about:blank" || value === window.location.origin + "/") {
-                value = null;
+            const storeInDb = localStorage.getItem("app_settings_storeFilesInDb") === "true";
+            if (storeInDb) {
+                // Значення вже оновлено напряму в tableData через openFileEditor — беремо звідти
+                const recordIndex = Math.min(currentFormRecordIndex, (table.data?.length ?? 1) - 1);
+                value = table.data?.[recordIndex]?.[colIndex] ?? null;
+            } else {
+                const img = f.querySelector("img");
+                value = img ? img.src : "";
+                // Якщо src — це "default" або порожній — зробити null
+                if (!value || value === window.location.href || value === "about:blank" || value === window.location.origin + "/") {
+                    value = null;
+                }
             }
         }
         // --- ЗВИЧАЙНА ОБРОБКА для інших типів ---

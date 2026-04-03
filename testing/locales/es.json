@@ -1,4 +1,13 @@
 {
+  "text": "Texto",
+  "integer": "Entero",
+  "real": "Número real",
+  "boolean": "Booleano",
+  "date": "Fecha",
+  "image": "Imagen",
+  "list": "Lista",
+  "file": "Archivo",
+  "frmLastRec": ", último registro",
   "nameLengthError": "El nombre debe tener entre 2 y 32 caracteres.",
   "nameSpaceError": "El nombre no debe contener espacios — use ' ' en su lugar.",
   "nameStartError": "El nombre debe comenzar con una letra (latina o cirílica).",
@@ -221,5 +230,6 @@
   "uiSelectOrCreate": "Seleccionar o Crear Base de Datos",
   "ioPkChoiceLabel": "Seleccione un campo de CLAVE PRIMARIA:",
   "ioAddAutoId": "Agregue un nuevo campo de ID (entero, autoincrementable)",
-  "ioTableCreateError": "Error al crear la tabla"
+  "ioTableCreateError": "Error al crear la tabla",
+  "queryNewQuery": "Nueva_consulta"
 }

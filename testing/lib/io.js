@@ -1,3 +1,53 @@
+// ===== _app_settings: службова таблиця налаштувань у SQLite =====
+// Не відображається у списку таблиць користувача.
+
+function ensureAppSettingsTable() {
+    if (!db) return;
+    db.run(`
+        CREATE TABLE IF NOT EXISTS "_app_settings" (
+            "key"   TEXT PRIMARY KEY,
+            "value" TEXT
+        );
+    `);
+}
+
+function appSettingGet(key) {
+    if (!db) return null;
+    try {
+        const res = db.exec(`SELECT "value" FROM "_app_settings" WHERE "key" = '${key.replace(/'/g, "''")}' LIMIT 1;`);
+        if (res.length && res[0].values.length) return res[0].values[0][0];
+    } catch (e) {
+        console.warn("appSettingGet error:", e);
+    }
+    return null;
+}
+
+function appSettingSet(key, value) {
+    if (!db) return;
+    ensureAppSettingsTable();
+    db.run(
+        `INSERT INTO "_app_settings" ("key","value") VALUES (?,?) ON CONFLICT("key") DO UPDATE SET "value"=excluded."value";`,
+        [key, String(value)]
+    );
+}
+
+/**
+ * Читає STORE_FILES_IN_DB з _app_settings і синхронізує в localStorage.
+ * Якщо в БД значення немає — читає з localStorage і записує в БД.
+ */
+function syncStoreFilesInDbSetting() {
+    ensureAppSettingsTable();
+    const dbVal = appSettingGet("storeFilesInDb");
+    if (dbVal !== null) {
+        // БД — джерело правди при перенесенні на інший ПК
+        localStorage.setItem("app_settings_storeFilesInDb", dbVal);
+    } else {
+        // Перший запуск: переносимо значення з localStorage до БД
+        const lsVal = localStorage.getItem("app_settings_storeFilesInDb") ?? "false";
+        appSettingSet("storeFilesInDb", lsVal);
+    }
+}
+
 function openAppDB() {
     return new Promise((resolve, reject) => {
         const req = indexedDB.open(IDB_NAME, 1);
@@ -62,7 +112,8 @@ async function loadDatabase() {
 
         if (data) {
             db = new SQL.Database(data);
-            console.log("База даних завантажена: ",db);            
+            console.log("База даних завантажена: ",db);
+            syncStoreFilesInDbSetting();            
             // Завантажити запити тільки якщо є база
             const savedQueries = localStorage.getItem(name + ".queries-data");
             if (savedQueries) {
@@ -107,6 +158,7 @@ async function loadDatabase() {
 
         } else {
             db = new SQL.Database(); // створюємо нову БД, але без запитів
+            syncStoreFilesInDbSetting();
             queries.definitions = []; // обнуляємо, бо бази немає
             database.reports = [];
             database.forms = [];
@@ -133,6 +185,9 @@ async function loadDatabase() {
 async function saveDatabase() {
         console.log("Зберігаємо базу даних: ", database.fileName)
         if (!db) return;
+        // Синхронізуємо налаштування з localStorage → _app_settings перед збереженням
+        const storeFilesInDb = localStorage.getItem("app_settings_storeFilesInDb") ?? "false";
+        appSettingSet("storeFilesInDb", storeFilesInDb);
         await idbSave(database.fileName + ".db-data", db.export());
         console.log("Зберігаємо таблиці: ",database.tables)
         localStorage.setItem(database.fileName + ".tables-data", JSON.stringify(
@@ -217,6 +272,7 @@ async function loadSelectedDb() {
 
     // Очистити database, queries та меню
     clearDB();
+    syncStoreFilesInDbSetting();
 
     // Завантажити дані з локального сховища
     const fullDatabase = JSON.parse(localStorage.getItem(selectedDbFile + ".tables-data"));
@@ -406,11 +462,12 @@ async function importDTA(file) {
 
     // Відновлення таблиць через sqlite_master + savedSchemas
     database.tables = [];
+    syncStoreFilesInDbSetting();
     const res = db.exec("SELECT name, sql FROM sqlite_master WHERE type='table';");
     if (res.length > 0) {
         const tableRows = res[0].values;
         tableRows.forEach(([name, sql]) => {
-            if (name.startsWith("sqlite_")) return;
+            if (name.startsWith("sqlite_") || name === "_app_settings") return;
 
             const savedSchema = savedSchemas.find(s => s.name === name)?.schema;
 
@@ -490,13 +547,14 @@ function importSQLiteDb(file) {
                 // Зберігаємо файл в IndexedDB
                 await idbSave(fileName + ".db-data", uIntArray);
                
-                db = importedDb;    
+                db = importedDb;
+                syncStoreFilesInDbSetting();
     
                 const res = db.exec("SELECT name, sql FROM sqlite_master WHERE type='table';");
                 if (res.length > 0) {
                     const tableRows = res[0].values;
                     tableRows.forEach(([name]) => {
-                        if (name.startsWith("sqlite_")) return;
+                        if (name.startsWith("sqlite_") || name === "_app_settings") return;
     
                         const pragmaRes = db.exec(`PRAGMA table_info("${name}")`);
                         if (!pragmaRes.length) return;

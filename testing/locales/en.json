@@ -1,4 +1,13 @@
 {
+  "text":"Text",
+  "integer":"Integer",
+  "real":"Real",
+  "boolean":"Boolean",
+  "date":"Date",
+  "image":"Image",
+  "list":"List",
+  "file":"File",
+  "frmLastRec": ", last record", 	
   "nameLengthError": "Name must be between 2 and 32 characters. ",
   "nameSpaceError": "Name must not contain spaces — use ' ' instead. ",
   "nameStartError": "Name must start with a letter (Latin or Cyrillic). ",
@@ -221,5 +230,6 @@
   "uiSelectOrCreate": "Select or Create Database ",
   "ioPkChoiceLabel": "Choose a PRIMARY KEY field:",
   "ioAddAutoId": "Add new ID field (integer, autoincrement)",
-  "ioTableCreateError": "Error creating table"
+  "ioTableCreateError": "Error creating table",
+  "queryNewQuery": "New_query"
 }

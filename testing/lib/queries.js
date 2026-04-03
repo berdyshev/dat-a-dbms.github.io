@@ -988,6 +988,7 @@ function createOwnSQL() {
         document.getElementById("ownSqlInput").value = ""; // Очистити поле вводу
         document.getElementById("ownSqlResults").innerHTML = ""; // Очистити результати попередніх запитів
         document.getElementById("ownSqlModal").style.display = "flex";
+        document.getElementById('ownSQLName').value = t("queryNewQuery");
         toggleStructureButtonVisibility(true);
     }
     
