@@ -218,5 +218,8 @@
   "settingsIndexedDbClearError": "Error al borrar IndexedDB: ",
   "settingsIndexedDbOpenError": "Error al abrir IndexedDB: ",
   "uiDataBase": "Base de datos: ",
-  "uiSelectOrCreate": "Seleccionar o Crear Base de Datos"
+  "uiSelectOrCreate": "Seleccionar o Crear Base de Datos",
+  "ioPkChoiceLabel": "Seleccione un campo de CLAVE PRIMARIA:",
+  "ioAddAutoId": "Agregue un nuevo campo de ID (entero, autoincrementable)",
+  "ioTableCreateError": "Error al crear la tabla"
 }

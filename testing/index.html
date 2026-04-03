@@ -815,7 +815,7 @@
 			<!-- Ліва частина: логотип + текст -->
 			<div style="flex: 1;">
 				<div style="text-align: center; margin-bottom: 15px;"> <img src="logo.png" alt="Логотип" width="128" height="auto"> </div>
-				<h2 style="margin-top: 0;text-align:center;" lang-i18n="aboutTitle">About</h2>
+				<h2 style="margin-top: 0;text-align:center;" lang-i18n="aboutTitle">Про dat.A</h2>
 				<p lang-i18n="aboutDescription">dat.A — це простий вебзастосунок для роботи з базами даних безпосередньо у вашому браузері.</p>
 				<p><span lang-i18n="versionLabel">Версія:</span> 2.0-beta (02042026)</p>
 				<p lang-i18n="aboutCredits">Розроблено з любов'ю до інформатики та тих, хто її вивчає, і тих, хто їх навчає  💻❤️</p>
@@ -1297,6 +1297,8 @@
     <label lang-i18n="tableNameLabel">Назва таблиці:</label>
     <input id="importTableName" type="text" value="ІмпортованаТаблиця" style="padding:5px;"/>
     <div id="tableSchemaPreview" style="max-height:200px; overflow:auto; border:1px solid #ccc; padding:5px;"></div>
+    <!-- Вибір первинного ключа — заповнюється динамічно з confirmImportTable() -->
+    <div id="importPkChoice" style="padding:8px; background:#f5f5f5; border:1px solid #ddd; border-radius:6px;"></div>
     <div style="display:flex; gap:10px; justify-content:flex-end;">
       <button onclick="saveImportedTable()" lang-i18n="save">Зберегти</button>
       <button onclick="closeConfirmImport()" lang-i18n="cancel">Скасувати</button>

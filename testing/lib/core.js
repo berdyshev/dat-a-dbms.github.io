@@ -671,7 +671,13 @@ function handlePrimaryKey(checkbox) {
         const yesBtn = document.getElementById("pkYes");
         yesBtn.onclick = () => {
             if (typeSelect) {
-                typeSelect.value = t("schemaTypes")[1]; // "Ціле число" / "Integer"
+                // Шукаємо індекс опції, що відповідає типу "integer" (індекс 1),
+                // замість встановлення .value (може не збігтись через пробіли/регістр)
+                const integerLabel = t("schemaTypes")[1];
+                const optionIdx = Array.from(typeSelect.options).findIndex(
+                    o => o.text.trim() === integerLabel.trim()
+                );
+                typeSelect.selectedIndex = optionIdx >= 0 ? optionIdx : 1;
                 autoIncrement = getColumnName(checkbox);
                 console.log("PK field autoIncrement=", autoIncrement);
                 // встановлення автоінкременту у схемі

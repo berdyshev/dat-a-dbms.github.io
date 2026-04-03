@@ -218,5 +218,8 @@
  "settingsIndexedDbClearError":  "Erreur d'effacement d'IndexedDB: ",
  "settingsIndexedDbOpenError":  "Erreur d'ouverture d'IndexedDB: ",
  "uiDataBase":  "Base de données: ",
- "uiSelectOrCreate":  "Sélectionner ou Créer une Base de Données  "
+ "uiSelectOrCreate":  "Sélectionner ou Créer une Base de Données",
+ "ioPkChoiceLabel": "Choisissez un champ de clé primaire :",
+ "ioAddAutoId": "Ajouter un nouveau champ d'identifiant (entier, auto-incrémenté)",
+ "ioTableCreateError": "Erreur lors de la création de la table"
 }

@@ -218,5 +218,8 @@
   "settingsIndexedDbClearError": "Błąd czyszczenia IndexedDB: ",
   "settingsIndexedDbOpenError": "Błąd otwierania IndexedDB: ",
   "uiDataBase": "Baza danych: ",
-  "uiSelectOrCreate": "Wybierz lub Utwórz Bazę Danych "
+  "uiSelectOrCreate": "Wybierz lub Utwórz Bazę Danych",
+  "ioPkChoiceLabel": "Wybierz pole klucza podstawowego:",
+  "ioAddAutoId": "Dodaj nowe pole identyfikatora (liczba całkowita, autoinkrementacja)",
+  "ioTableCreateError": "Błąd podczas tworzenia tabeli"
 }

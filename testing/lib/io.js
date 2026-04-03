@@ -879,42 +879,59 @@ function confirmImportTable() {
     return;
   }
 
-  // Структура таблиці
   const headers = importedData[0];
   const sampleRow = importedData[1];
+
+  // Локалізовані назви типів через SCHEMA_TYPES
+  const ST = SCHEMA_TYPES;
+  const typeText = ST[0];
+  const typeInt  = ST[1];
+  const typeReal = ST[2];
+  const typeDate = ST[4];
+
+  // Визначаємо тип кожного поля за першим рядком даних
   const schema = headers.map((h, i) => {
-    const val = sampleRow[i];
-    let type = "Текст";
-    if (!isNaN(parseInt(val)) && Number.isInteger(Number(val))) type = "Ціле число";
-    else if (!isNaN(parseFloat(val))) type = "Дробове число";
-    else if (/^\d{4}-\d{2}-\d{2}$/.test(val)) type = "Дата";
+    const val = (sampleRow[i] || "").trim();
+    let type = typeText;
+    if (val !== "" && !isNaN(parseInt(val)) && Number.isInteger(Number(val))) type = typeInt;
+    else if (val !== "" && !isNaN(parseFloat(val))) type = typeReal;
+    else if (/^\d{4}-\d{2}-\d{2}$/.test(val)) type = typeDate;
     return { title: h.trim(), type: type };
   });
 
-  // додаємо ID на початку
-  const fullSchema = [{ title: "ID", type: "Ціле число", primaryKey: true, autoInc: true }]
-    .concat(schema);
+  // Зберігаємо схему без PK — користувач обере далі
+  window._importSchemaNoPK = schema;
+  window._importTypeInt = typeInt; // зберігаємо для saveImportedTable
 
-  // показ у вікні підтвердження
+  // Показуємо вікно підтвердження
   document.getElementById("confirmImportModal").style.display = "flex";
   const schemaDiv = document.getElementById("tableSchemaPreview");
 
-  // малюємо таблицю
-  let html = `<table border="1" cellpadding="5" style="border-collapse:collapse; width:100%;">`;
-  html += `<thead><tr>${t("ioSchemaFieldName")}</th><th>${t("ioSchemaDataType")}</th><th>PK</th><th>${t("ioSchemaAutoInc")}</tr></thead><tbody>`;
-  fullSchema.forEach(f => {
-    html += `<tr>
-      <td>${f.title}</td>
-      <td>${f.type}</td>
-      <td>${f.primaryKey ? "🔑" : ""}</td>
-      <td>${f.autoInc ? "✔️" : ""}</td>
-    </tr>`;
+  // Рядки попереднього перегляду схеми
+  let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;width:100%;">`;
+  html += `<thead><tr><th>${t("ioSchemaFieldName")}</th><th>${t("ioSchemaDataType")}</th></tr></thead><tbody>`;
+  schema.forEach(f => {
+    html += `<tr><td>${f.title}</td><td>${f.type}</td></tr>`;
   });
   html += `</tbody></table>`;
   schemaDiv.innerHTML = html;
 
-  // збереження для наступного кроку
-  window._importSchema = fullSchema;
+  // Будуємо блок вибору ключового поля
+  const pkBlock = document.getElementById("importPkChoice");
+  if (pkBlock) {
+    // Варіанти: наявні поля (тільки integer або text) + опція "додати ID"
+    let opts = `<option value="__add_id__">${t("ioAddAutoId")}</option>`;
+    schema.forEach((f, i) => {
+      const sqlT = typeToSQL(f.type);
+      if (sqlT === "INTEGER" || sqlT === "TEXT") {
+        opts += `<option value="${i}">${f.title} (${f.type})</option>`;
+      }
+    });
+    pkBlock.innerHTML = `
+      <label style="font-weight:bold;">${t("ioPkChoiceLabel")}</label><br>
+      <select id="importPkSelect" style="margin-top:4px;width:100%;">${opts}</select>
+    `;
+  }
 }
 
 
@@ -926,42 +943,90 @@ function saveImportedTable() {
   const name = document.getElementById("importTableName").value.trim();
   if (!checkName(name)) return;
 
-  // 🔍 Перевірка, чи вже існує таблиця з таким іменем
   const exists = database.tables.some(t => t.name === name);
   if (exists) {
     Message(t("ioTableExists", name));
     return;
   }
 
-  const schema = [].concat(window._importSchema);
+  // Використовуємо збережений тип з confirmImportTable, щоб гарантувати збіг
+  const typeInt = window._importTypeInt || SCHEMA_TYPES[1];
 
-  // створення таблиці
+  const baseSchemaNoPK = window._importSchemaNoPK || [];
+  const pkSelect = document.getElementById("importPkSelect");
+  const pkChoice = pkSelect ? pkSelect.value : "__add_id__";
+
+  let schema;
+  let idWasAdded = false; // чи додали ми нове поле ID з autoInc
+
+  if (pkChoice === "__add_id__") {
+    // Додаємо нове поле ID на початку
+    schema = [{ title: "ID", type: typeInt, primaryKey: true, autoInc: true }]
+      .concat(baseSchemaNoPK.map(f => ({ ...f })));
+    idWasAdded = true;
+  } else {
+    // Користувач обрав наявне поле як PK
+    const pkIdx = parseInt(pkChoice, 10);
+    schema = baseSchemaNoPK.map((f, i) => {
+      if (i === pkIdx) {
+        // Тип PK: якщо ціле число — дозволяємо autoInc, інакше просто PK
+        const sqlT = typeToSQL(f.type);
+        return { ...f, primaryKey: true, autoInc: sqlT === "INTEGER" };
+      }
+      return { ...f };
+    });
+    idWasAdded = false;
+  }
+
+  // Формуємо рядки даних
   const newTable = { name, schema, data: [] };
   importedData.slice(1).forEach((row, i) => {
-    const rec = [i+1].concat(row); // додаємо ID
-    newTable.data.push(rec);
+    newTable.data.push(idWasAdded ? [i + 1].concat(row) : [...row]);
   });
 
   database.tables.push(newTable);
 
-  // створити в SQLite
+  // CREATE TABLE
+  // Примітка: INTEGER PRIMARY KEY в SQLite вже є автоінкрементом (rowid alias).
+  // Ключове слово AUTOINCREMENT не використовується — воно не підтримується
+  // всіма версіями sql.js і не потрібне для базової auto-increment поведінки.
   const fieldsDef = schema.map(f => {
-    let t = f.type.toUpperCase();
-    if (t === "ЦІЛЕ ЧИСЛО") t = "INTEGER";
-    if (t === "ДРОБОВЕ ЧИСЛО") t = "REAL";
-    if (t === "ТЕКСТ") t = "TEXT";
-    if (t === "ДАТА") t = "TEXT";
-    let def = `"${f.title}" ${t}`;
-    if (f.primaryKey) def += " PRIMARY KEY AUTOINCREMENT";
+    const sqlType = typeToSQL(f.type);
+    let def = `"${f.title}" ${sqlType}`;
+    if (f.primaryKey) def += " PRIMARY KEY";
     return def;
   }).join(", ");
-  db.run(`CREATE TABLE "${name}" (${fieldsDef});`);
 
-  // вставка даних
+  try {
+    db.run(`CREATE TABLE "${name}" (${fieldsDef});`);
+  } catch(e) {
+    Message(t("ioTableCreateError", e.message));
+    database.tables.pop();
+    return;
+  }
+
+  // INSERT — якщо додавали autoInc ID, не передаємо його (SQLite генерує сам)
+  const insertSchema = idWasAdded ? schema.slice(1) : schema;
+  const insertCols = insertSchema.map(f => `"${f.title}"`).join(", ");
+  const insertPlaceholders = insertSchema.map(() => "?").join(", ");
+
   newTable.data.forEach(row => {
-    const values = row.map(v => v === null ? "NULL" : `'${String(v).replace(/'/g,"''")}'`);
-    db.run(`INSERT INTO "${name}" VALUES (${values.join(", ")});`);
+    const insertValues = idWasAdded ? row.slice(1) : row;
+    const safeValues = insertValues.map(v => v === null ? null : String(v));
+    try {
+      db.run(`INSERT INTO "${name}" (${insertCols}) VALUES (${insertPlaceholders});`, safeValues);
+    } catch(e) {
+      console.warn("INSERT error:", e.message, row);
+    }
   });
+
+  // Оновлюємо data з реальними значеннями з SQLite (включно з autoInc ID)
+  try {
+    const res = db.exec(`SELECT * FROM "${name}"`);
+    newTable.data = res.length ? res[0].values : [];
+  } catch(e) {
+    console.warn("Не вдалося перечитати дані після імпорту:", e);
+  }
 
   saveDatabase();
   addTableToMenu(name);

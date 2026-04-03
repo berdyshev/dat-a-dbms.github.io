@@ -1,4 +1,4 @@
-    let relationLines = [];
+let relationLines = [];
     let selectedFieldEl = null;
     let onRelationModalClose = null;
 
@@ -51,10 +51,13 @@
             title.innerText = table.name;
             title.style.fontWeight = "bold";
             title.style.padding = "4px 8px";
-            title.style.backgroundColor = "#242d43";
             title.style.borderBottom = "1px solid #ccc";
             title.style.borderTopLeftRadius = "4px";
             title.style.borderTopRightRadius = "4px";
+            // Кольори заголовку залежно від теми
+            const isDark = document.body.classList.contains("dark-theme");
+            title.style.backgroundColor = isDark ? "#1a2035" : "#242d43";
+            title.style.color = isDark ? "#c9d1e0" : "#ffffff";
             block.appendChild(title);
     
             const tableList = document.createElement("table");

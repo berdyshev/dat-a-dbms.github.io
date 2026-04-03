@@ -227,5 +227,8 @@
   "settingsIndexedDbClearError": "Fehler beim Löschen von IndexedDB:",
   "settingsIndexedDbOpenError": "Fehler beim Öffnen von IndexedDB:",
   "uiDataBase": "Datenbank:",
-  "uiSelectOrCreate": "Datenbank auswählen oder erstellen"
+  "uiSelectOrCreate": "Datenbank auswählen oder erstellen",
+  "ioPkChoiceLabel": "Primärschlüsselfeld auswählen:",
+  "ioAddAutoId": "Neues ID-Feld hinzufügen (Ganzzahl, automatisch inkrementierend)",
+  "ioTableCreateError": "Fehler beim Erstellen der Tabelle"
 }

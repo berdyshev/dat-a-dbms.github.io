@@ -218,5 +218,8 @@
   "settingsIndexedDbClearError": "IndexedDB clear error: ",
   "settingsIndexedDbOpenError": "IndexedDB open error: ",
   "uiDataBase": "Database: ",
-  "uiSelectOrCreate": "Select or Create Database "
+  "uiSelectOrCreate": "Select or Create Database ",
+  "ioPkChoiceLabel": "Choose a PRIMARY KEY field:",
+  "ioAddAutoId": "Add new ID field (integer, autoincrement)",
+  "ioTableCreateError": "Error creating table"
 }
