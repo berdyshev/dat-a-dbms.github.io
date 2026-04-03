@@ -515,3 +515,7 @@ input[type="date"] {
 #ownSqlModal > div {
   pointer-events: auto; /* але всередині — активне */
 }
+
+#structureContent {
+    background-color: #ffffff; /* стандартний колір */
+}
