@@ -246,7 +246,8 @@ async function showStorageDialog() {
 
         li.addEventListener("click", () => {
             [...listEl.children].forEach(el => el.style.background = "");
-            li.style.background = "#242d43";
+            const isDark = document.body.classList.contains("dark-theme");
+            li.style.background = isDark ? "#242d43" : "#d0e0ff";
             selectedDbFile = fileName;
         });
 

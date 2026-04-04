@@ -22,7 +22,8 @@ function showData() {
         li.dataset.tableName = name;
         li.addEventListener("click", () => {
             [...listEl.children].forEach(el => el.style.background = "");
-            li.style.background = "#242d43";
+            const isDark = document.body.classList.contains("dark-theme");
+            li.style.background = isDark ? "#242d43" : "#d0e0ff";
             selectedTableNameForEdit = li.dataset.tableName;
         });
         listEl.appendChild(li);
@@ -52,7 +53,8 @@ function showDataWorkDialog() {
         li.style.cursor = "pointer";
         li.addEventListener("click", () => {
             [...listEl.children].forEach(el => el.style.background = "");
-            li.style.background = "#242d43";
+            const isDark = document.body.classList.contains("dark-theme");
+            li.style.background = isDark ? "#242d43" : "#d0e0ff";
             selectedDataWorkName = t.name;
         });
         listEl.appendChild(li);
@@ -65,7 +67,8 @@ function showDataWorkDialog() {
         li.style.cursor = "pointer";
         li.addEventListener("click", () => {
             [...listEl.children].forEach(el => el.style.background = "");
-            li.style.background = "#242d43";
+            const isDark = document.body.classList.contains("dark-theme");
+            li.style.background = isDark ? "#242d43" : "#d0e0ff";
             selectedDataWorkName = "*" + q.name; // без пробілу — substring(1) поверне точне ім'я
         });
         listEl.appendChild(li);

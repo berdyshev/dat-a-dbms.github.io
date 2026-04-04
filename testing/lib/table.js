@@ -13,7 +13,8 @@
 
             li.addEventListener("click", () => {
                 [...listEl.children].forEach(el => el.style.background = "");
-                li.style.background = "#242d43";// Functions for managing saved tables
+                const isDark = document.body.classList.contains("dark-theme");
+                li.style.background = isDark ? "#242d43" : "#d0e0ff";// Functions for managing saved tables
     function showSavedTablesDialog() {
         const listEl = document.getElementById("savedTablesList");
         listEl.innerHTML = "";
@@ -28,7 +29,8 @@
 
             li.addEventListener("click", () => {
                 [...listEl.children].forEach(el => el.style.background = "");
-                li.style.background = "#242d43";
+                const isDark = document.body.classList.contains("dark-theme");
+                li.style.background = isDark ? "#242d43" : "#d0e0ff";
                 selectedTableNameForEdit = li.dataset.tableName;
             });
             listEl.appendChild(li);
