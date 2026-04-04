@@ -1,142 +1,4 @@
 /**
- * Модальний редактор списку для поля типу "list".
- * Дозволяє додавати/видаляти елементи та обирати активний (перший у масиві).
- * @param {Object}   initialState  — { items: string[], selected: string }
- * @param {Function} onSave        — колбек(newState), викликається при закритті
- */
-function openListModal(initialState, onSave) {
-    // Уникаємо дублювання модалки
-    const existingOverlay = document.getElementById("listEditorOverlay");
-    if (existingOverlay) existingOverlay.remove();
-
-    // Клонуємо стан, щоб не мутувати оригінал до збереження
-    let items = [...(initialState.items || [])];
-    let selected = initialState.selected || (items[0] || "");
-
-    // ---------- Розмітка ----------
-    const overlay = document.createElement("div");
-    overlay.id = "listEditorOverlay";
-
-    const modal = document.createElement("div");
-    modal.id = "listEditorModal";
-    modal.innerHTML = `<div class="le-body" id="leBody"></div>`;
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    let showInput = false;
-    const leBody = modal.querySelector("#leBody");
-
-    // ---------- Рендер ----------
-    function render() {
-        leBody.innerHTML = "";
-
-        items.forEach((txt, i) => {
-            const isActive = (i === 0);
-            const item = document.createElement("div");
-            item.className = "le-item" + (isActive ? " le-active" : "");
-            item.innerHTML = `
-                ${isActive ? '<span class="le-check">✓</span>' : ''}
-                <span class="le-rank">${i + 1}</span>
-                <span class="le-text">${escHtml(txt)}</span>
-                <button class="le-del" title="${(typeof t === "function" && t("aeditDelete")) || "Видалити"}">✕</button>
-            `;
-            item.addEventListener("click", () => moveToTop(i));
-            item.querySelector(".le-del").addEventListener("click", (e) => {
-                e.stopPropagation();
-                removeItem(i);
-            });
-            leBody.appendChild(item);
-        });
-
-        if (showInput) {
-            const row = document.createElement("div");
-            row.className = "le-input-row";
-            const inp = document.createElement("input");
-            inp.type = "text";
-            inp.placeholder = (typeof t === "function" && t("add item")) || "Введіть текст...";
-            inp.autocomplete = "off";
-            inp.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") { e.preventDefault(); commitInput(); }
-                if (e.key === "Escape") { e.preventDefault(); showInput = false; render(); }
-            });
-            row.appendChild(inp);
-            leBody.appendChild(row);
-            setTimeout(() => inp.focus(), 10);
-        }
-
-        const addBtn = document.createElement("button");
-        addBtn.className = "le-add-btn";
-        addBtn.textContent = "+";
-        //addBtn.title = (typeof t === "function" && t("aeditListAdd")) || "Додати елемент";
-        addBtn.addEventListener("click", handlePlus);
-        leBody.appendChild(addBtn);
-    }
-
-    function handlePlus() {
-        const inp = leBody.querySelector(".le-input-row input");
-        if (!inp) { showInput = true; render(); return; }
-        commitInput();
-    }
-
-    function commitInput() {
-        const inp = leBody.querySelector(".le-input-row input");
-        if (!inp) return;
-        const val = inp.value.trim();
-        if (val) {
-            items.push(val);
-            selected = items[0];
-        }
-        inp.value = "";
-        render();
-    }
-
-    function moveToTop(i) {
-        const [item] = items.splice(i, 1);
-        items.unshift(item);
-        selected = item;
-        render();
-    }
-
-    function removeItem(i) {
-        items.splice(i, 1);
-        selected = items[0] || "";
-        render();
-    }
-
-    function escHtml(s) {
-        const d = document.createElement("div");
-        d.textContent = s;
-        return d.innerHTML;
-    }
-
-    // ---------- Збереження чернетки з поля вводу ----------
-    function flushInput() {
-        const inp = leBody.querySelector(".le-input-row input");
-        if (inp) {
-            const val = inp.value.trim();
-            if (val) { items.push(val); selected = items[0]; }
-        }
-    }
-
-    // ---------- Закриття ----------
-    function saveAndClose() {
-        flushInput();
-        overlay.remove();
-        onSave({ items: [...items], selected: items[0] || "" });
-    }
-
-    // ---------- Обробники ----------
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) saveAndClose(); });
-    document.addEventListener("keydown", function escHandler(e) {
-        if (e.key === "Escape") { document.removeEventListener("keydown", escHandler); saveAndClose(); }
-    });
-
-    render();
-}
-
-
-/**
  *  Розширене введення даних з контролем типів та налаштування елементів вводу (select, input, contentEditable, обмеження по типу даних, перевірки) *  
 **/
 function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
@@ -307,79 +169,25 @@ function advDataInput(container, cellData, col, rowData, index, isReadOnly) {
         container.appendChild(picker);
         createdEl = picker;
     }
-    // ===== СПИСОК (модальний редактор) =====
+    // ===== СПИСОК (dropdown) =====
     else if (typeStr === "list") {
-        // Елементи списку живуть у col.comment у вигляді "item1,item2,item3"
-        // rowData[index] / cellData — лише поточне (активне) значення комірки
-
-        const parseComment = (comment) => {
-            if (!comment || typeof comment !== "string") return [];
-            return comment.split(",").map(s => s.trim()).filter(Boolean);
-        };
-        const serializeComment = (its) => its.map(s => s.replace(/,/g, "")).join(",");
-
-        // Елементи зі схеми; активний — з комірки
-        let items = parseComment(col.comment);
-        const activeVal = (cellData !== null && cellData !== undefined && cellData !== "")
-            ? String(cellData) : (items[0] || "");
-
-        // Переміщуємо активний елемент на першу позицію
-        const activeIdx = items.indexOf(activeVal);
-        if (activeIdx > 0) {
-            items.splice(activeIdx, 1);
-            items.unshift(activeVal);
-        } else if (activeIdx === -1 && activeVal) {
-            items.unshift(activeVal);
-        }
-
-        let listState = { items, selected: items[0] || "" };
-        rowData[index] = listState.selected || null;
-
-        // Кнопка-тригер, що відображає активний елемент
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.disabled = !!isReadOnly;
-        btn.title = isReadOnly ? listState.selected : (t("aeditListEdit") || "Редагувати список");
-
-        Object.assign(btn.style, {
-            border: "none",
-            background: "transparent",
-            cursor: isReadOnly ? "default" : "pointer",
-            padding: "0 4px",
-            margin: "0",
-            outline: "none",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            width: "100%",
-            height: "100%",
-            font: "inherit",
-            color: "inherit",
-            textAlign: "left",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap"
+        const select = document.createElement("select");
+        const opts = Array.isArray(col.options) ? col.options : [];
+        const emptyOpt = document.createElement("option");
+        emptyOpt.value = "";
+        emptyOpt.textContent = t("aeditEmpty");
+        select.appendChild(emptyOpt);
+        opts.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            select.appendChild(o);
         });
-
-        const updateBtnLabel = () => {
-            btn.textContent = listState.selected || (t("aeditEmpty") || "—");
-        };
-        updateBtnLabel();
-
-        btn.onclick = () => {
-            if (isReadOnly) return;
-            openListModal(listState, (newState) => {
-                listState = newState;
-                // Зберігаємо повний список назад у схему (col.comment)
-                col.comment = serializeComment(newState.items);
-                // У комірку — лише активний елемент
-                rowData[index] = newState.selected || null;
-                updateBtnLabel();
-            });
-        };
-
-        container.appendChild(btn);
-        createdEl = btn;
+        select.value = opts.includes(String(cellData)) ? String(cellData) : "";
+        select.disabled = !!isReadOnly;
+        container.appendChild(select);
+        createdEl = select;
+        select.addEventListener("change", () => { rowData[index] = select.value || null; });
     }
 	// ===== IMAGE =====
     // STORE_FILES_IN_DB = false → зберігається лише URL (рядок)

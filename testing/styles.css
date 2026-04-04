@@ -881,3 +881,161 @@ body.dark-theme ::-webkit-scrollbar-thumb {
     border-radius: 5px;
 }
 body.dark-theme ::-webkit-scrollbar-thumb:hover { background: #777; }
+
+
+/* ========== МОДАЛЬНИЙ РЕДАКТОР СПИСКУ (#listEditorOverlay) ========== */
+
+/* ── Змінні: світла тема (за замовчуванням) ── */
+#listEditorOverlay {
+    --le-accent:        #1a6090;
+    --le-accent-rgb:    26, 96, 144;
+    --le-modal-bg:      #ffffff;
+    --le-modal-border:  #9ab4c8;
+    --le-item-bg:       #f4f7fa;
+    --le-item-hover:    #ddeaf4;
+    --le-active-bg:     #c8dff0;
+    --le-active-border: #1a6090;
+    --le-active-shadow: rgba(26, 96, 144, 0.18);
+    --le-text:          #0d1f2d;
+    --le-text-dim:      #1e3a50;
+    --le-text-muted:    #5a7a90;
+    --le-input-bg:      #e8f2fa;
+    --le-input-border:  #1a6090;
+    --le-scrollbar:     #7aaac8;
+    --le-shadow:        0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Змінні: темна тема ── */
+body.dark-theme #listEditorOverlay {
+    --le-accent:        #4a9eff;
+    --le-accent-rgb:    74, 158, 255;
+    --le-modal-bg:      #2d2d2d;
+    --le-modal-border:  #444;
+    --le-item-bg:       rgba(255, 255, 255, 0.03);
+    --le-item-hover:    rgba(74, 158, 255, 0.08);
+    --le-active-bg:     rgba(74, 158, 255, 0.15);
+    --le-active-border: rgba(74, 158, 255, 0.45);
+    --le-active-shadow: rgba(74, 158, 255, 0.1);
+    --le-text:          #e0e0e0;
+    --le-text-dim:      #c0c0c0;
+    --le-text-muted:    #888;
+    --le-input-bg:      rgba(74, 158, 255, 0.07);
+    --le-input-border:  rgba(74, 158, 255, 0.35);
+    --le-scrollbar:     #555;
+    --le-shadow:        0 15px 45px rgba(0, 0, 0, 0.55);
+}
+
+#listEditorOverlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(1px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    animation: listOverlayIn 0.2s ease;
+}
+@keyframes listOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+#listEditorModal {
+    background: var(--le-modal-bg);
+    border: 1px solid var(--le-modal-border);
+    border-radius: 10px;
+    width: 380px; max-width: 92vw;
+    max-height: 75vh;
+    display: flex; flex-direction: column;
+    box-shadow: var(--le-shadow);
+    overflow: hidden;
+    animation: listModalIn 0.22s ease;
+}
+@keyframes listModalIn {
+    from { transform: scale(0.92) translateY(12px); opacity: 0; }
+    to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+#listEditorModal .le-body {
+    padding: 5px 5px;
+    overflow-y: auto; flex: 1;
+    display: flex; flex-direction: column;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    
+}
+#listEditorModal .le-body::-webkit-scrollbar { width: 5px; }
+#listEditorModal .le-body::-webkit-scrollbar-thumb {
+    background: var(--le-scrollbar); border-radius: 4px;
+}
+
+#listEditorModal .le-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px;
+    background: var(--le-item-bg);
+    border: 1px solid transparent; border-radius: 8px;
+    cursor: pointer; transition: background 0.18s, border-color 0.18s;
+    animation: leItemIn 0.18s ease;
+    color: var(--le-text-dim);
+}
+@keyframes leItemIn {
+    from { opacity: 0; transform: translateX(-7px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+#listEditorModal .le-item:hover { background: var(--le-item-hover); }
+#listEditorModal .le-item.le-active {
+    background: var(--le-active-bg);
+    border-color: var(--le-active-border);
+    box-shadow: 0 0 10px var(--le-active-shadow);
+}
+#listEditorModal .le-item.le-active .le-rank { color: var(--le-accent); font-weight: 700; }
+#listEditorModal .le-item.le-active .le-text { color: var(--le-text); font-weight: 600; }
+
+#listEditorModal .le-rank {
+    font-size: 0.68rem; color: var(--le-text-muted);
+    min-width: 14px; text-align: center; flex-shrink: 0;
+}
+#listEditorModal .le-check {
+    font-size: 0.75rem; color: var(--le-accent); flex-shrink: 0;
+}
+#listEditorModal .le-text {
+    flex: 1; font-size: 1rem; color: var(--le-text-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+#listEditorModal .le-del {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid transparent; border-radius: 5px;
+    color: var(--le-text-muted); font-size: 0.78rem; cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s; flex-shrink: 0;
+}
+#listEditorModal .le-del:hover {
+    background: rgba(200, 40, 40, 0.1); color: #c02020;
+    border-color: rgba(200, 40, 40, 0.35);
+}
+body.dark-theme #listEditorModal .le-del:hover {
+    background: rgba(255, 70, 70, 0.12); color: #ff6666;
+    border-color: rgba(255, 70, 70, 0.3);
+}
+
+#listEditorModal .le-input-row {
+    display: flex; align-items: center;
+    padding: 7px 9px;
+    background: var(--le-input-bg);
+    border: 1px solid var(--le-input-border); border-radius: 8px;
+    animation: leItemIn 0.18s ease;
+}
+#listEditorModal .le-input-row input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--le-text); font-size: 0.87rem;
+}
+#listEditorModal .le-input-row input::placeholder { color: var(--le-text-muted); }
+
+#listEditorModal .le-add-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; padding: 9px; margin-top: 2px;
+    background: transparent;
+    border: 1px dashed rgba(var(--le-accent-rgb), 0.45); border-radius: 8px;
+    color: var(--le-accent); font-size: 1.25rem; font-weight: 500;
+    cursor: pointer; transition: background 0.18s, border-color 0.18s;
+    font-family: inherit;
+}
+#listEditorModal .le-add-btn:hover {
+    background: var(--le-item-hover);
+    border-color: rgba(var(--le-accent-rgb), 0.75);
+}

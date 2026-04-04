@@ -904,11 +904,9 @@ function saveSchema() {
         const type = row.querySelector('[data-role="type"] select').value;
         const commentCell = row.querySelector('[data-role="comment"]');
         const commentRaw = commentCell ? commentCell.innerText.trim() : "";
-        const isListType = typeToSQL(type) === "TEXT" && (type === "Список" || type === "List");
-        const options = isListType
-            ? commentRaw.split(",").map(s => s.trim()).filter(Boolean)
-            : [];
-        const comment = isListType ? "" : commentRaw;
+        const isListType = type === "list";
+        const options = [];
+        const comment = commentRaw;
 
         if (!title) continue;
 
@@ -1468,9 +1466,7 @@ function updateSchemaTableHeader(hasForeign) {
         const fkSubst = field.subst;
         
         console.log("fkSubst=",fkSubst)
-        const comment = (selectedType === "list")
-            ? (field.options || []).join(", ")
-            : (field.comment || "");
+        const comment = field.comment || "";
 
         const tableSelectHtml = `
             <select onchange="updateFieldOptions(this)" ${isForeign ? "" : "disabled"}>
