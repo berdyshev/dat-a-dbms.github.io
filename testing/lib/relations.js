@@ -56,7 +56,7 @@ let relationLines = [];
             title.style.borderTopRightRadius = "4px";
             // Кольори заголовку залежно від теми
             const isDark = document.body.classList.contains("dark-theme");
-            title.style.backgroundColor = isDark ? "#1a2035" : "#242d43";
+            title.style.backgroundColor = isDark ? "#1a2035" : "#d0e0ff";
             title.style.color = isDark ? "#c9d1e0" : "#ffffff";
             block.appendChild(title);
     
