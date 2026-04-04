@@ -767,21 +767,21 @@ function handleCsvFile(file) {
         }
 
         // Перевірка типів даних
-        // typeMap підтримує і українські (збережені), і англійські мітки типів
+        // typeMap використовує внутрішні ключі SCHEMA_TYPE_KEYS
         const isInteger   = val => /^-?\d+$/.test(val);
         const isReal      = val => /^-?\d+(\.\d+)?$/.test(val);
         const isBool      = val => /^(true|false|1|0)$/i.test(val);
         const isAny       = val => true;
         const isDate      = val => !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}$/.test(val);
         const typeMap = {
-            "Ціле число": isInteger,   "Integer": isInteger,
-            "Дробове число": isReal,   "Real number": isReal,
-            "Так/Ні": isBool,          "Yes/No": isBool,
-            "Текст": isAny,            "Text": isAny,
-            "Дата": isDate,            "Date": isDate,
-            "Список": isAny,           "List": isAny,
-            "Зображення": isAny,       "Image": isAny,
-            "Файл": isAny,             "File": isAny,
+            "integer": isInteger,
+            "real": isReal,
+            "boolean": isBool,
+            "text": isAny,
+            "date": isDate,
+            "list": isAny,
+            "image": isAny,
+            "file": isAny,
         };
 
         for (let i = 0; i < dataRows.length; i++) {
@@ -789,7 +789,7 @@ function handleCsvFile(file) {
             for (let j = 0; j < expectedHeaders.length; j++) {
                 const val = row[j];
                 const type = table.schema[j].type;
-                if (!typeMap[type](val)) {
+                if (!type in typeMap || !typeMap[type](val)) {
                     Message(t("ioCsvTypeError", i + 1, table.schema[j].title, type, val));
                     return;
                 }
