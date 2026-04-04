@@ -231,5 +231,15 @@
  "ioPkChoiceLabel": "Choisissez un champ de clé primaire :",
  "ioAddAutoId": "Ajouter un nouveau champ d'identifiant (entier, auto-incrémenté)",
  "ioTableCreateError": "Erreur lors de la création de la table",
- "queryNewQuery": "Nouvelle_requête"
+ "queryNewQuery": "Nouvelle_requête",
+  "computedFieldOption": "Calcul...",
+  "computedFieldTitle": "Champ calculé",
+  "computedLeftOperand": "Champ gauche :",
+  "computedOperator": "Opérateur :",
+  "computedRightOperand": "Champ droit / valeur :",
+  "computedTypeField": "Champ",
+  "computedTypeValue": "Valeur",
+  "computedAliasLabel": "Alias (obligatoire) :",
+  "computedAliasRequired": "Veuillez saisir un alias pour le champ calculé.",
+  "computedEditHint": "Cliquez pour modifier l'expression"
 }

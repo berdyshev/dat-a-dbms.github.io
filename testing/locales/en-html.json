@@ -184,5 +184,12 @@
   "databaseStructureTitle": "Database Structure",
   "download": "Download",
   "fileSizeWarning": "File exceeds 5 MB limit",
-  "storeFilesInDbCheckbox": "Store files and images in the database"
+  "storeFilesInDbCheckbox": "Store files and images in the database",
+  "computedFieldTitle": "Computed Field",
+  "computedLeftOperand": "Left field:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Right field / value:",
+  "computedTypeField": "Field",
+  "computedTypeValue": "Value",
+  "computedAliasLabel": "Alias (required):"
 }

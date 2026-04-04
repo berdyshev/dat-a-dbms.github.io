@@ -183,5 +183,12 @@
   "databaseStructureTitle": "Datenbankstruktur",
   "download": "Herunterladen",
   "fileSizeWarning": "Datei überschreitet 5 MB-Limit",
-  "storeFilesInDbCheckbox": "Dateien und Bilder in der Datenbank speichern"
+  "storeFilesInDbCheckbox": "Dateien und Bilder in der Datenbank speichern",
+  "computedFieldTitle": "Berechnetes Feld",
+  "computedLeftOperand": "Linkes Feld:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Rechtes Feld / Wert:",
+  "computedTypeField": "Feld",
+  "computedTypeValue": "Wert",
+  "computedAliasLabel": "Alias (erforderlich):"
 }

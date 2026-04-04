@@ -184,5 +184,12 @@
   "databaseStructureTitle": "Структура бази даних",
   "download": "Завантажити",
   "fileSizeWarning": "Файл перевищує ліміт 5 МБ",
-  "storeFilesInDbCheckbox": "Зберігати файли і зображення в базі даних"
+  "storeFilesInDbCheckbox": "Зберігати файли і зображення в базі даних",
+  "computedFieldTitle": "Обчислюване поле",
+  "computedLeftOperand": "Ліве поле:",
+  "computedOperator": "Оператор:",
+  "computedRightOperand": "Праве поле / значення:",
+  "computedTypeField": "Поле",
+  "computedTypeValue": "Значення",
+  "computedAliasLabel": "Псевдонім (обов'язково):"
 }

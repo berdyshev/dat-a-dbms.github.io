@@ -99,7 +99,7 @@ function addQueryRow() {
     
     row.innerHTML = `
         <td><select class="query-table-select" onchange="populateFieldDropdown(this)"></select></td>
-        <td><select class="query-field-select"></select></td>
+        <td><select class="query-field-select" onchange="onFieldSelectChange(this)"></select><div class="computed-expr-display" style="display:none; margin-top:4px; font-size:12px; color:#555; cursor:pointer;" onclick="editComputedField(this)"></div></td>
         <td><input type="checkbox" checked class="query-visible-checkbox"></td>
         <td><select class="query-sort-select"></select></td>
         <td>
@@ -143,7 +143,225 @@ function toggleAliasInput(selectEl) {
 }
 
 
-/** 
+// ===================== Computed Fields =====================
+
+let computedFieldTargetRow = null; // row that triggered the modal
+
+/**
+ * Called when field select changes — opens computed modal if __expr__ selected
+ */
+function onFieldSelectChange(selectEl) {
+    if (selectEl.value === "__expr__") {
+        computedFieldTargetRow = selectEl.closest("tr");
+        openComputedFieldModal();
+    } else {
+        // Hide expression display if switching back to normal field
+        const row = selectEl.closest("tr");
+        const display = row.querySelector(".computed-expr-display");
+        if (display) {
+            display.style.display = "none";
+            display.innerHTML = "";
+        }
+        // Clear stored computed data
+        delete row.dataset.computed;
+    }
+}
+
+/**
+ * Collects tables available in query context (FROM + JOINs)
+ */
+function getQueryTables() {
+    const tables = [];
+    const fromTable = document.getElementById("fromTable")?.value;
+    if (fromTable) tables.push(fromTable);
+
+    // All tables selected in query rows
+    document.querySelectorAll("#queryBody .query-table-select").forEach(sel => {
+        if (sel.value && !tables.includes(sel.value)) tables.push(sel.value);
+    });
+
+    // JOIN tables
+    document.querySelectorAll("#joinBody .join-table-a, #joinBody .join-table-b").forEach(sel => {
+        if (sel.value && !tables.includes(sel.value)) tables.push(sel.value);
+    });
+
+    // Fallback: all database tables
+    if (tables.length === 0) {
+        database.tables.forEach(t => tables.push(t.name));
+    }
+
+    return tables;
+}
+
+/**
+ * Populates table dropdown for computed field modal
+ */
+function populateComputedTableDropdown(selectId) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = "";
+    const tables = getQueryTables();
+    tables.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Populates field dropdown based on selected table in computed modal
+ */
+function populateComputedFields(tableSelectId, fieldSelectId) {
+    const tableName = document.getElementById(tableSelectId).value;
+    const fieldSelect = document.getElementById(fieldSelectId);
+    fieldSelect.innerHTML = "";
+    if (!tableName) return;
+
+    const table = database.tables.find(t => t.name === tableName);
+    if (!table) return;
+
+    table.schema.forEach(field => {
+        const opt = document.createElement("option");
+        opt.value = field.title;
+        opt.textContent = field.title;
+        fieldSelect.appendChild(opt);
+    });
+}
+
+/**
+ * Toggle between field and value for right operand
+ */
+function toggleComputedRightType() {
+    const type = document.getElementById("computedRightType").value;
+    const tableEl = document.getElementById("computedRightTable");
+    const fieldEl = document.getElementById("computedRightField");
+    const valueEl = document.getElementById("computedRightValue");
+
+    if (type === "field") {
+        tableEl.style.display = "";
+        fieldEl.style.display = "";
+        valueEl.style.display = "none";
+    } else {
+        tableEl.style.display = "none";
+        fieldEl.style.display = "none";
+        valueEl.style.display = "";
+    }
+}
+
+/**
+ * Opens the computed field modal, pre-populating dropdowns
+ */
+function openComputedFieldModal() {
+    populateComputedTableDropdown("computedLeftTable");
+    populateComputedTableDropdown("computedRightTable");
+    populateComputedFields("computedLeftTable", "computedLeftField");
+    populateComputedFields("computedRightTable", "computedRightField");
+
+    // Set left table to the row's selected table
+    if (computedFieldTargetRow) {
+        const rowTable = computedFieldTargetRow.querySelector(".query-table-select").value;
+        if (rowTable) {
+            document.getElementById("computedLeftTable").value = rowTable;
+            populateComputedFields("computedLeftTable", "computedLeftField");
+            document.getElementById("computedRightTable").value = rowTable;
+            populateComputedFields("computedRightTable", "computedRightField");
+        }
+    }
+
+    // Reset
+    document.getElementById("computedOperator").value = "+";
+    document.getElementById("computedRightType").value = "field";
+    document.getElementById("computedRightValue").value = "";
+    document.getElementById("computedAlias").value = "";
+    toggleComputedRightType();
+
+    // Restore from existing data if editing
+    if (computedFieldTargetRow && computedFieldTargetRow.dataset.computed) {
+        const c = JSON.parse(computedFieldTargetRow.dataset.computed);
+        document.getElementById("computedLeftTable").value = c.leftTable;
+        populateComputedFields("computedLeftTable", "computedLeftField");
+        document.getElementById("computedLeftField").value = c.leftField;
+        document.getElementById("computedOperator").value = c.operator;
+        document.getElementById("computedRightType").value = c.rightType;
+        toggleComputedRightType();
+        if (c.rightType === "field") {
+            document.getElementById("computedRightTable").value = c.rightTable;
+            populateComputedFields("computedRightTable", "computedRightField");
+            document.getElementById("computedRightField").value = c.rightField;
+        } else {
+            document.getElementById("computedRightValue").value = c.rightField;
+        }
+        document.getElementById("computedAlias").value = c.alias;
+    }
+
+    document.getElementById("computedFieldModal").style.display = "flex";
+}
+
+/**
+ * Confirms computed field, stores data on the row
+ */
+function confirmComputedField() {
+    const alias = document.getElementById("computedAlias").value.trim();
+    if (!alias) {
+        Message(t("computedAliasRequired"));
+        return;
+    }
+
+    const rightType = document.getElementById("computedRightType").value;
+    const computed = {
+        leftTable: document.getElementById("computedLeftTable").value,
+        leftField: document.getElementById("computedLeftField").value,
+        operator: document.getElementById("computedOperator").value,
+        rightType: rightType,
+        rightTable: rightType === "field" ? document.getElementById("computedRightTable").value : null,
+        rightField: rightType === "field" ? document.getElementById("computedRightField").value : document.getElementById("computedRightValue").value.trim(),
+        alias: alias
+    };
+
+    if (!computedFieldTargetRow) return;
+
+    // Store computed config on the row
+    computedFieldTargetRow.dataset.computed = JSON.stringify(computed);
+
+    // Build display label
+    const leftLabel = `${computed.leftTable}.${computed.leftField}`;
+    const rightLabel = computed.rightType === "field"
+        ? `${computed.rightTable}.${computed.rightField}`
+        : computed.rightField;
+    const displayText = `${leftLabel} ${computed.operator} ${rightLabel} → ${alias}`;
+
+    // Show expression display
+    const display = computedFieldTargetRow.querySelector(".computed-expr-display");
+    display.innerHTML = `<span title="${t("computedEditHint")}">⚡ ${displayText} ✏️</span>`;
+    display.style.display = "block";
+
+    document.getElementById("computedFieldModal").style.display = "none";
+    computedFieldTargetRow = null;
+}
+
+/**
+ * Cancels computed field modal — revert select if no prior computed data
+ */
+function cancelComputedField() {
+    if (computedFieldTargetRow && !computedFieldTargetRow.dataset.computed) {
+        const fieldSelect = computedFieldTargetRow.querySelector(".query-field-select");
+        fieldSelect.value = fieldSelect.options[0]?.value || "";
+    }
+    document.getElementById("computedFieldModal").style.display = "none";
+    computedFieldTargetRow = null;
+}
+
+/**
+ * Edit an existing computed field (click on the display label)
+ */
+function editComputedField(displayEl) {
+    computedFieldTargetRow = displayEl.closest("tr");
+    openComputedFieldModal();
+}
+
+// ===================== End Computed Fields =====================
+
+/**
  * Видаляє рядок з конструктора запиту
  * Параметр:
  *   button — кнопка ❌, яка викликала подію
@@ -234,8 +452,18 @@ function populateFieldDropdown(tableSelect) {
         const option = document.createElement("option");
         option.value = field.title;
         option.textContent = field.title;
-        fieldSelect.appendChild(option);        
+        fieldSelect.appendChild(option);
     });
+
+    // Додати опцію "Обчислення"
+    const exprSep = document.createElement("option");
+    exprSep.disabled = true;
+    exprSep.textContent = "──────────";
+    fieldSelect.appendChild(exprSep);
+    const exprOption = document.createElement("option");
+    exprOption.value = "__expr__";
+    exprOption.textContent = "⚡ " + t("computedFieldOption");
+    fieldSelect.appendChild(exprOption);
 
     const startOption = document.createElement("option");
     startOption.value = "";
@@ -343,13 +571,30 @@ function generateSqlQuery() {
         if (!tableName || (!fieldName && fieldName !== "*")) return;
         if (!baseTable && tableName !== "*") baseTable = tableName;
 
+        // --- Computed expression ---
+        let computedData = null;
+        if (fieldName === "__expr__" && row.dataset.computed) {
+            computedData = JSON.parse(row.dataset.computed);
+        }
+
         let fieldExpr = fieldName === "*"
             ? `"${tableName}".*`
+            : fieldName === "__expr__" ? null
             : `"${tableName}"."${fieldName}"`;
 
         // --- SELECT ---
         let selectExpr = "";
-        if (fieldName === "*") {
+        if (fieldName === "__expr__" && computedData) {
+            const left = `"${computedData.leftTable}"."${computedData.leftField}"`;
+            const right = computedData.rightType === "field"
+                ? `"${computedData.rightTable}"."${computedData.rightField}"`
+                : isNumericLiteral(String(computedData.rightField))
+                    ? computedData.rightField
+                    : sqlQuote(computedData.rightField);
+            selectExpr = `(${left} ${computedData.operator} ${right}) AS ${computedData.alias}`;
+            alias = computedData.alias;
+            hasSelect = true;
+        } else if (fieldName === "*") {
             selectExpr = fieldExpr;
             hasSelect = true;
         } else {
@@ -381,7 +626,7 @@ function generateSqlQuery() {
         }
 
         // --- WHERE ---
-        if (fieldName !== "*" && operator) {
+        if (fieldName !== "*" && fieldName !== "__expr__" && operator) {
             const fieldType = getFieldType(tableName, fieldName);
             const op = operator.toUpperCase();
             if (op === "IS NULL" || op === "IS NOT NULL") {
@@ -412,11 +657,13 @@ function generateSqlQuery() {
         }
 
         // --- save config row ---
-        queryConfig.push({
+        const configRow = {
             tableName, fieldName, isVisible,
             sortBy, operator, criteria,
             fieldRole, alias, groupName
-        });
+        };
+        if (computedData) configRow.computed = computedData;
+        queryConfig.push(configRow);
     });
 
     // --- JOIN ---
@@ -735,7 +982,7 @@ function populateQueryModal(queryDefinition) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td><select class="query-table-select" onchange="onFromTableChange()"></select></td>
-            <td><select class="query-field-select"></select></td>
+            <td><select class="query-field-select" onchange="onFieldSelectChange(this)"></select><div class="computed-expr-display" style="display:none; margin-top:4px; font-size:12px; color:#555; cursor:pointer;" onclick="editComputedField(this)"></div></td>
             <td><input type="checkbox" checked class="query-visible-checkbox"></td>
             <td>
                 <select class="query-sort-select">
@@ -787,6 +1034,20 @@ function populateQueryModal(queryDefinition) {
         row.querySelector(".query-visible-checkbox").checked = item.isVisible;
         row.querySelector(".query-sort-select").value = item.sortBy;
 
+        // Restore computed field if present
+        if (item.fieldName === "__expr__" && item.computed) {
+            row.dataset.computed = JSON.stringify(item.computed);
+            const c = item.computed;
+            const leftLabel = `${c.leftTable}.${c.leftField}`;
+            const rightLabel = c.rightType === "field"
+                ? `${c.rightTable}.${c.rightField}`
+                : c.rightField;
+            const displayText = `${leftLabel} ${c.operator} ${rightLabel} → ${c.alias}`;
+            const display = row.querySelector(".computed-expr-display");
+            display.innerHTML = `<span title="${t("computedEditHint")}">⚡ ${displayText} ✏️</span>`;
+            display.style.display = "block";
+        }
+
         const operatorSelect = row.querySelector(".query-operator-select");
         const criteriaInput = row.querySelector(".query-criteria-input");
 
@@ -797,8 +1058,8 @@ function populateQueryModal(queryDefinition) {
 
         // Встановлюємо роль поля (важливо!)
         const roleSelect = row.querySelector(".query-field-role");
-        roleSelect.value = item.fieldRole || "select";     
-        
+        roleSelect.value = item.fieldRole || "select";
+
         // Встановлюємо псевдонім, якщо він був
         const aliasInput = row.querySelector(".query-alias-input");
         if (item.alias) {

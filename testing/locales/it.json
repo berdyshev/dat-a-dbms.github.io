@@ -231,5 +231,15 @@
   "ioPkChoiceLabel": "Scegli un campo CHIAVE PRIMARIA:",
   "ioAddAutoId": "Aggiungi un nuovo campo ID (intero, autoincremento)",
   "ioTableCreateError": "Errore durante la creazione della tabella",
-  "queryNewQuery": "Nuova_query"
+  "queryNewQuery": "Nuova_query",
+  "computedFieldOption": "Calcolo...",
+  "computedFieldTitle": "Campo calcolato",
+  "computedLeftOperand": "Campo sinistro:",
+  "computedOperator": "Operatore:",
+  "computedRightOperand": "Campo destro / valore:",
+  "computedTypeField": "Campo",
+  "computedTypeValue": "Valore",
+  "computedAliasLabel": "Alias (obbligatorio):",
+  "computedAliasRequired": "Inserisci un alias per il campo calcolato.",
+  "computedEditHint": "Clicca per modificare l'espressione"
 }
