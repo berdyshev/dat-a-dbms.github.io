@@ -231,5 +231,15 @@
   "ioPkChoiceLabel": "Оберіть ключове поле (PRIMARY KEY):",
   "ioAddAutoId": "Додати нове поле ID (ціле число, автоінкремент)",
   "ioTableCreateError": "Помилка при створенні таблиці",
-  "queryNewQuery": "Новий_запит"
+  "queryNewQuery": "Новий_запит",
+  "computedFieldOption": "Обчислення...",
+  "computedFieldTitle": "Обчислюване поле",
+  "computedLeftOperand": "Ліве поле:",
+  "computedOperator": "Оператор:",
+  "computedRightOperand": "Праве поле / значення:",
+  "computedTypeField": "Поле",
+  "computedTypeValue": "Значення",
+  "computedAliasLabel": "Псевдонім (обов'язково):",
+  "computedAliasRequired": "Введіть псевдонім для обчислюваного поля.",
+  "computedEditHint": "Натисніть, щоб редагувати вираз"
 }

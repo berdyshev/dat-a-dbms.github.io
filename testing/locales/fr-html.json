@@ -180,5 +180,12 @@
  "databaseStructureTitle":  "Structure de la base de données",
  "download":  "Télécharger",
  "fileSizeWarning":  "Le fichier dépasse la limite de 5 Mo ",
- "storeFilesInDbCheckbox": "Stocker les fichiers et les images dans la base de données" 
+ "storeFilesInDbCheckbox": "Stocker les fichiers et les images dans la base de données",
+  "computedFieldTitle": "Champ calculé",
+  "computedLeftOperand": "Champ gauche :",
+  "computedOperator": "Opérateur :",
+  "computedRightOperand": "Champ droit / valeur :",
+  "computedTypeField": "Champ",
+  "computedTypeValue": "Valeur",
+  "computedAliasLabel": "Alias (obligatoire) :"
 }

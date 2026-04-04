@@ -231,5 +231,15 @@
   "ioPkChoiceLabel": "Choose a PRIMARY KEY field:",
   "ioAddAutoId": "Add new ID field (integer, autoincrement)",
   "ioTableCreateError": "Error creating table",
-  "queryNewQuery": "New_query"
+  "queryNewQuery": "New_query",
+  "computedFieldOption": "Computed...",
+  "computedFieldTitle": "Computed Field",
+  "computedLeftOperand": "Left field:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Right field / value:",
+  "computedTypeField": "Field",
+  "computedTypeValue": "Value",
+  "computedAliasLabel": "Alias (required):",
+  "computedAliasRequired": "Please enter an alias for the computed field.",
+  "computedEditHint": "Click to edit expression"
 }

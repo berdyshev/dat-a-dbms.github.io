@@ -180,5 +180,12 @@
   "databaseStructureTitle": "Struttura del Database",
   "download": "Scarica",
   "fileSizeWarning": "Il file supera il limite di 5 MB",
-  "storeFilesInDbCheckbox": "Memorizza file e immagini nel database"
+  "storeFilesInDbCheckbox": "Memorizza file e immagini nel database",
+  "computedFieldTitle": "Campo calcolato",
+  "computedLeftOperand": "Campo sinistro:",
+  "computedOperator": "Operatore:",
+  "computedRightOperand": "Campo destro / valore:",
+  "computedTypeField": "Campo",
+  "computedTypeValue": "Valore",
+  "computedAliasLabel": "Alias (obbligatorio):"
 }

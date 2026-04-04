@@ -231,5 +231,15 @@
   "ioPkChoiceLabel": "Wybierz pole klucza podstawowego:",
   "ioAddAutoId": "Dodaj nowe pole identyfikatora (liczba całkowita, autoinkrementacja)",
   "ioTableCreateError": "Błąd podczas tworzenia tabeli",
-  "queryNewQuery": "Nowe_zapytanie"
+  "queryNewQuery": "Nowe_zapytanie",
+  "computedFieldOption": "Obliczenie...",
+  "computedFieldTitle": "Pole obliczeniowe",
+  "computedLeftOperand": "Lewe pole:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Prawe pole / wartość:",
+  "computedTypeField": "Pole",
+  "computedTypeValue": "Wartość",
+  "computedAliasLabel": "Alias (wymagany):",
+  "computedAliasRequired": "Wprowadź alias dla pola obliczeniowego.",
+  "computedEditHint": "Kliknij, aby edytować wyrażenie"
 }

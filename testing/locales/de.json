@@ -240,5 +240,15 @@
   "ioPkChoiceLabel": "Primärschlüsselfeld auswählen:",
   "ioAddAutoId": "Neues ID-Feld hinzufügen (Ganzzahl, automatisch inkrementierend)",
   "ioTableCreateError": "Fehler beim Erstellen der Tabelle",
-  "queryNewQuery": "Neue_Abfrage"
+  "queryNewQuery": "Neue_Abfrage",
+  "computedFieldOption": "Berechnung...",
+  "computedFieldTitle": "Berechnetes Feld",
+  "computedLeftOperand": "Linkes Feld:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Rechtes Feld / Wert:",
+  "computedTypeField": "Feld",
+  "computedTypeValue": "Wert",
+  "computedAliasLabel": "Alias (erforderlich):",
+  "computedAliasRequired": "Bitte geben Sie einen Alias für das berechnete Feld ein.",
+  "computedEditHint": "Klicken Sie, um den Ausdruck zu bearbeiten"
 }

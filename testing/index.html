@@ -837,6 +837,47 @@
 			</div>
 		</div>
 	</div>
+	<!-- Вікно побудови обчислюваного поля -->
+	<div id="computedFieldModal" class="modal" style="display:none; z-index:10020;">
+		<div class="modal-content" style="background:white; padding:20px; border-radius:10px; max-width:500px; margin:auto;">
+			<h3 lang-i18n="computedFieldTitle">Обчислюване поле</h3>
+			<div style="display:flex; flex-direction:column; gap:10px;">
+				<!-- Left operand -->
+				<label lang-i18n="computedLeftOperand">Ліве поле:</label>
+				<div style="display:flex; gap:6px;">
+					<select id="computedLeftTable" onchange="populateComputedFields('computedLeftTable','computedLeftField')" style="flex:1;"></select>
+					<select id="computedLeftField" style="flex:1;"></select>
+				</div>
+				<!-- Operator -->
+				<label lang-i18n="computedOperator">Оператор:</label>
+				<select id="computedOperator" style="width:100px;">
+					<option value="+">+ </option>
+					<option value="-">− </option>
+					<option value="*">× </option>
+					<option value="/">/ </option>
+					<option value="||">|| (concat)</option>
+				</select>
+				<!-- Right operand -->
+				<label lang-i18n="computedRightOperand">Праве поле / значення:</label>
+				<div style="display:flex; gap:6px; align-items:center;">
+					<select id="computedRightType" onchange="toggleComputedRightType()" style="width:100px;">
+						<option value="field" lang-i18n="computedTypeField">Поле</option>
+						<option value="value" lang-i18n="computedTypeValue">Значення</option>
+					</select>
+					<select id="computedRightTable" onchange="populateComputedFields('computedRightTable','computedRightField')" style="flex:1;"></select>
+					<select id="computedRightField" style="flex:1;"></select>
+					<input type="text" id="computedRightValue" placeholder="" style="flex:1; display:none;">
+				</div>
+				<!-- Alias -->
+				<label lang-i18n="computedAliasLabel">Псевдонім (обов'язково):</label>
+				<input type="text" id="computedAlias" style="width:100%; padding:6px;">
+			</div>
+			<div style="text-align:right; margin-top:15px;">
+				<button onclick="confirmComputedField()" lang-i18n="ok">ОК</button>
+				<button onclick="cancelComputedField()" lang-i18n="cancel">Скасувати</button>
+			</div>
+		</div>
+	</div>
 	<!-- Модальне вікно головного меню -->
 	<div id="mainMenuModal" style="
   display: none;

@@ -180,5 +180,12 @@
   "databaseStructureTitle": "Struktura Bazy Danych",
   "download": "Pobierz",
   "fileSizeWarning": "Plik przekracza limit 5 MB",
-  "storeFilesInDbCheckbox": "Przechowuj pliki i obrazy w bazie danych"
+  "storeFilesInDbCheckbox": "Przechowuj pliki i obrazy w bazie danych",
+  "computedFieldTitle": "Pole obliczeniowe",
+  "computedLeftOperand": "Lewe pole:",
+  "computedOperator": "Operator:",
+  "computedRightOperand": "Prawe pole / wartość:",
+  "computedTypeField": "Pole",
+  "computedTypeValue": "Wartość",
+  "computedAliasLabel": "Alias (wymagany):"
 }
