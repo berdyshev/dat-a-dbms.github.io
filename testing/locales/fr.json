@@ -68,6 +68,7 @@
  "primaryKeyLabel":  "Clé primaire",
  "queryDefaultName":  "Nouvelle_requête",
  "querySelectTable":  "Sélectionner une table",
+ "querySelectField": "Sélectionner un champ",
  "queryAllFields":  "* (Tous les champs)",
  "queryAlias":  "alias",
  "queryAliasFull":  "Alias",
