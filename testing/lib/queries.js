@@ -225,24 +225,23 @@ function ensureExprBuilderModal() {
                 <span class="eb-empty">—</span>
             </div>
 
-            <!-- 🔹 Верхня панель керування (Flexbox) -->
+            <!-- Toolbar: Add Field | Functions | , | DEL -->
             <div class="eb-toolbar">
-                <!-- FIELD two-select panel - ширина 3 кнопки -->
                 <div class="eb-field-wrap" id="exprFieldDropdownWrap">
                     <button id="exprFieldBtn" class="eb-btn eb-btn-field" onclick="exprShowFieldSelects()">
                         ${t("exprAddFieldBtn")}
                     </button>
-                    <select id="exprTableSelect" class="eb-table-select" onchange="exprOnTableChange()"
-                        style="display:none;">
-                        <option value="">${t("exprSelectTable")}</option>
-                    </select>
-                    <select id="exprFieldSelect" class="eb-field-select" onchange="exprOnFieldChange()"
-                        style="display:none;" disabled>
-                        <option value="">${t("exprSelectField")}</option>
-                    </select>
+                    <div class="eb-field-dropdowns">
+                        <select id="exprTableSelect" class="eb-table-select" onchange="exprOnTableChange()"
+                            style="display:none;">
+                            <option value="">${t("exprSelectTable")}</option>
+                        </select>
+                        <select id="exprFieldSelect" class="eb-field-select" onchange="exprOnFieldChange()"
+                            style="display:none;" disabled>
+                            <option value="">${t("exprSelectField")}</option>
+                        </select>
+                    </div>
                 </div>
-            
-                <!-- FUNC dropdown - ширина 3 кнопки -->
                 <div class="eb-func-wrap" id="exprFuncDropdownWrap">
                     <button class="eb-btn eb-btn-field" onclick="exprToggleFuncMenu()">${t("exprFuncBtn")}</button>
                     <div id="exprFuncMenu" class="eb-func-menu">
@@ -251,32 +250,24 @@ function ensureExprBuilderModal() {
                         ).join("")}
                     </div>
                 </div>
-            
-                <!-- Кнопка коми - однакового розміру з digit/op -->
                 <button class="eb-btn eb-btn-op eb-btn-comma" onclick="exprAdd(',')">,</button>
-            
-                <!-- Кнопка DEL - однакового розміру з digit/op -->
                 <button class="eb-btn eb-btn-del" onclick="exprDel()">⌫</button>
             </div>
 
-            <!-- 🔹 Цифрова сітка (Grid) -->
+            <!-- 🔹 Цифрова сітка -->
             <div class="eb-grid">
-                <!-- row 1 -->
                 ${["7","8","9"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
                 <button class="eb-btn eb-btn-op" onclick="exprAdd('*')">*</button>
                 <button class="eb-btn eb-btn-op" onclick="exprAdd('%')">%</button>
 
-                <!-- row 2 -->
                 ${["4","5","6"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
                 <button class="eb-btn eb-btn-op" onclick="exprAdd('/')">/</button>
                 <button class="eb-btn eb-btn-op" onclick="exprAdd('(')">(</button>
 
-                <!-- row 3 -->
                 ${["1","2","3"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
                 <button class="eb-btn eb-btn-op" onclick="exprAdd('+')">+</button>
                 <button class="eb-btn eb-btn-op" onclick="exprAdd(')')">)</button>
 
-                <!-- row 4: 0  .  +/-  -  OK -->
                 <button class="eb-btn eb-btn-digit" onclick="exprAdd('0')">0</button>
                 <button class="eb-btn eb-btn-digit" onclick="exprAdd('.')">.</button>
                 <button class="eb-btn eb-btn-op"    onclick="exprToggleSign()">+/-</button>
@@ -421,7 +412,7 @@ function exprShowFieldSelects() {
     fieldSelect.style.display = "";
     fieldSelect.innerHTML = `<option value="">${t("exprSelectField")}</option>`;
     fieldSelect.disabled = true;
-    fieldSelect.style.opacity = "0.5";
+    //fieldSelect.style.opacity = "0.5";
 }
 
 /**
@@ -453,7 +444,7 @@ function _exprPopulateFieldMenu() {
     // Reset field select
     fieldSelect.innerHTML = `<option value="">${t("exprSelectField")}</option>`;
     fieldSelect.disabled = true;
-    fieldSelect.style.opacity = "0.5";
+    // /fieldSelect.style.opacity = "0.5";
 
     // Ensure button is visible, selects hidden
     _exprHideFieldSelects();
@@ -471,7 +462,7 @@ function exprOnTableChange() {
 
     if (!tableName) {
         fieldSelect.disabled = true;
-        fieldSelect.style.opacity = "0.5";
+        //fieldSelect.style.opacity = "0.5";
         return;
     }
 
@@ -486,7 +477,7 @@ function exprOnTableChange() {
     });
 
     fieldSelect.disabled = false;
-    fieldSelect.style.opacity = "1";
+    //fieldSelect.style.opacity = "1";
 }
 
 /**
@@ -549,8 +540,8 @@ function confirmComputedField() {
 
     // Show alias as label, full expression as tooltip
     const display = computedFieldTargetRow.querySelector(".computed-expr-display");
-    display.innerHTML = `<span title="${_exprValue}" style="text-decoration:underline dotted;cursor:pointer;">⚡ ${alias}</span>`;
-    display.style.display = "block";
+    display.innerHTML = `<span title="${_exprValue}" style="cursor:pointer;">⚡ ${alias}</span>`;
+    display.style.display = "flex";
 
     document.getElementById("exprBuilderModal").style.display = "none";
     computedFieldTargetRow = null;
@@ -1256,6 +1247,7 @@ function populateQueryModal(queryDefinition) {
 
         // Restore computed field if present
         if (item.fieldName === "__expr__" && item.computed) {
+            const c = item.computed;
             let exprStr, aliasStr;
             if (c.expr !== undefined) {
                 // New format

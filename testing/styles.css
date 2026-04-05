@@ -1,458 +1,415 @@
-/* noto-color-emoji-regular - emoji */
+/* ── 1. Загальне ── */
 
-.emoji {
-    font-family: 'Noto Color Emoji', sans-serif;
+.emoji { font-family: 'Noto Color Emoji', sans-serif; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Головне меню */
-    .menu-bar {
-      background-color: #2c3e50;
-      color: white;
-      display: flex;
-      padding: 0;
-    }
-
-    .menu-item {
-      position: relative;
-      padding: 14px 20px;
-      cursor: pointer;
-    }
-
-    .menu-item:hover {
-      background-color: #34495e;
-    }
-
-    .dropdown {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background-color: white;
-      color: black;
-      min-width: 220px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      z-index: 1;
-    }
-
-    .dropdown a {
-      display: block;
-      padding: 10px;
-      text-decoration: none;
-      color: black;
-    }
-
-    .dropdown a:hover {
-      background-color: #f1f1f1;
-    }
-
-    .menu-item:hover .dropdown {
-      display: block;
-    }
-
-    /* Для заголовка вікна */
-    .title-bar {
-      background-color: #ecf0f1;
-      padding: 20px;
-      font-size: 24px;
-      border-bottom: 1px solid #ccc;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-    }
-    
-    #title-image {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      margin-right: 20px;
-      display: none;
-    }
-    
-    #editTable td,
-    #editTable th {
-      min-width: 100px;
-      max-width: 150px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      height: 30px;
-      vertical-align: middle;
-      text-align: center;
-    }
-
-    #editTable td {
-      background-color: #fff;
-    }
-
-    #editTable th {
-      background-color: #eee;
-      font-weight: bold;
-    }
-
-    #editTable th.pk,
-    #editTable td.pk {
-      max-width: 60px;
-      min-width: 60px;
-      width: 60px;
-      background-color: #f0f0f0;
-      font-weight: bold;
-    }
-    #editBody td {
-        font-weight: normal;
-    }
-    .center-image {
-      text-align: center;
-      margin-top: 5%;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1001;
-    }
-
-    .modal-content {
-      background: Aqua;
-      padding: 1.5em;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      min-width: 280px;
-      max-width: 800px;
-    }
-    .alert-modal-content {
-      background: Tomato;
-      padding: 1.5em;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      min-width: 280px;
-      max-width: 400px;
-      border: 3px solid red; /* 🔴 Червона рамка */
-    }
-    /* Styles for query modal */
-    #queryModal .query-table th,
-    #queryModal .query-table td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-
-    #queryModal .query-table th {
-      background-color: #f2f2f2;
-    }
-
-    #queryModal .query-table select,
-    #queryModal .query-table input[type="text"] {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-
-    /* Styles for Report Creator */
-    #reportCanvas {
-      border: 1px solid #ccc;
-      min-height: 400px;
-      background-color: #f9f9f9;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .report-element {
-      position: absolute;
-      border: 1px dashed #999;
-      background-color: transparent;
-      padding: 5px;
-      box-sizing: border-box;      
-      cursor: grab;
-      touch-action: none;   /* вимикає нативний скрол під час жестів */
-      user-select: none;    /* щоб не виділявся текст */
-    }
-
-    /* Активний елемент — суцільна синя рамка */
-    .report-element.selected {
-      border: 2px solid blue;
-      outline: none;
-    }
-    /* Показуємо маркери тільки для виділеного */
-    .report-element.selected .resize-handle {
-      display: block;
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: blue;
-      border: 1px solid white;
-      z-index: 10;
-    }
-
-    /* Ховаємо маркери за замовчуванням 
-    .resize-handle {
-      display: none;
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: blue;
-      border: 1px solid white;
-      z-index: 10;
-    }
-*/
-
- 
-    /* Стиль тексту поля */
-    .report-field .field-text {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      pointer-events: none;
-    }
-
-    /* Grid for reportCanvas */
-    #reportCanvas.grid-visible {
-      background-image:
-        /* Horizontal dashed lines */
-        repeating-linear-gradient(0deg, #ccc 0, #ccc 1px, transparent 1px, transparent 19px, #ccc 19px, #ccc 20px),
-        /* Vertical dashed lines */
-        repeating-linear-gradient(90deg, #ccc 0, #ccc 1px, transparent 1px, transparent 19px, #ccc 19px, #ccc 20px);
-      background-size: 20px 20px;
-      /* Changed from 10px 10px to 20px 20px */
-    }
-
-    /* Text Options Modal specific styles */
-    #textOptionsModal .modal-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      width: 350px;
-      text-align: left;
-    }
-
-    #textOptionsModal label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    #textOptionsModal select,
-    #textOptionsModal input[type="number"],
-    #textOptionsModal input[type="color"] {
-      width: calc(100% - 10px);
-      padding: 8px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    #textOptionsModal .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    #textOptionsModal .checkbox-group label {
-      font-weight: normal;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    #textOptionsModal .button-group {
-      text-align: right;
-      margin-top: 20px;
-    }
-
-    #textOptionsModal button {
-      padding: 10px 20px;
-      margin-left: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-    }
-
-    #textOptionsModal button:hover {
-      background-color: #0056b3;
-    }
-
-    td.selected {
-      background-color: #cce5ff;
-      border: 2px solid #3399ff;
-    }
-
-    #relationCanvas svg {
-      position: absolute;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .relation-table {
-      position: absolute;
-      z-index: 1;
-    }
-
-    .form-element {
-      border: 1px dashed #999;
-      position: absolute;
-      background-color: transparent;
-      padding: 5px;
-      box-sizing: border-box;
-      cursor: grab;
-      touch-action: none;   /* вимикає нативний скрол під час жестів */
-      user-select: none;    /* щоб не виділявся текст */
-    }
-
-    .form-element.selected {
-      border: 2px solid blue;
-    }
-
-    .form-element .resize-handle {
-      display: none;
-    }
-
-    .selection-border {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border: 2px solid blue;
-      pointer-events: none;
-      z-index: 1; /* Менше, ніж у маркерів */
-      box-sizing: border-box;
-    }
+.center-image {
+    text-align: center;
+    margin-top: 5%;
+}
 
 
-    .form-element.selected .resize-handle {
-      display: block;
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: blue;
-      border: 1px solid white;
-      z-index: 10;
-    }
+/* ── 2. Головне меню ── */
 
-    .resize-handle.top-left {
-      top: -5px;
-      left: -5px;
-      cursor: nwse-resize;
-    }
+.menu-bar {
+    background-color: #2c3e50;
+    color: white;
+    display: flex;
+    padding: 0;
+}
 
-    .resize-handle.top-right {
-      top: -5px;
-      right: -5px;
-      cursor: nesw-resize;
-    }
+.menu-item {
+    position: relative;
+    padding: 14px 20px;
+    cursor: pointer;
+}
+.menu-item:hover { background-color: #34495e; }
+.menu-item:hover .dropdown { display: block; }
 
-    .resize-handle.bottom-left {
-      bottom: -5px;
-      left: -5px;
-      cursor: nesw-resize;
-    }
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    color: black;
+    min-width: 220px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+.dropdown a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
+.dropdown a:hover { background-color: #f1f1f1; }
 
-    .resize-handle.bottom-right {
-      bottom: -5px;
-      right: -5px;
-      cursor: nwse-resize;
-    }
 
-  .quick-section h3 {
-      margin-bottom: 10px;
-    }
-    .quick-icons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .quick-icon {
-      width: 110px;
-      height: 80px;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      font-size: 12px;
-      padding: 5px;
-    }
-    .quick-icon:hover {
-      background-color: #e0e0e0;
-    }
-    .quick-icon .icon {
-      font-size: 24px;
-    }
-    
-  .menu-icon {
+/* ── 3. Title bar ── */
+
+.title-bar {
+    background-color: #ecf0f1;
+    font-size: 24px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+#title-image {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-right: 20px;
+    display: none;
+}
+
+
+/* ── 4. Таблиці редагування ── */
+
+#editTable td,
+#editTable th {
+    min-width: 100px;
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: 30px;
+    vertical-align: middle;
+    text-align: center;
+}
+#editTable td { background-color: #fff; }
+#editTable th {
+    background-color: #eee;
+    font-weight: bold;
+}
+
+#editTable th.pk,
+#editTable td.pk {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+#editBody td { font-weight: normal; }
+
+
+/* ── 5. Модальні вікна ── */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+}
+
+.modal-content {
+    background: Aqua;
+    padding: 1.5em;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    min-width: 280px;
+    max-width: 800px;
+}
+
+.alert-modal-content {
+    background: Tomato;
+    padding: 1.5em;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    min-width: 280px;
+    max-width: 400px;
+    border: 3px solid red;
+}
+
+
+/* ── 6. Query modal ── */
+
+#queryModal .query-table th,
+#queryModal .query-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+#queryModal .query-table th { background-color: #f2f2f2; }
+
+#queryModal .query-table select,
+#queryModal .query-table input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.query-alias-input {
+    margin-top: 4px;
+    display: block;
+    width: 100%;
+    height: 1.5em;
+}
+
+
+/* ── 7. Report Creator ── */
+
+#reportCanvas {
+    border: 1px solid #ccc;
+    min-height: 400px;
+    background-color: #f9f9f9;
+    position: relative;
+    overflow: hidden;
+}
+
+#reportCanvas.grid-visible {
+    background-image:
+        repeating-linear-gradient(  0deg, #ccc 0, #ccc 1px, transparent 1px, transparent 19px, #ccc 19px, #ccc 20px),
+        repeating-linear-gradient( 90deg, #ccc 0, #ccc 1px, transparent 1px, transparent 19px, #ccc 19px, #ccc 20px);
+    background-size: 20px 20px;
+}
+
+.report-element {
+    position: absolute;
+    border: 1px dashed #999;
+    background-color: transparent;
+    padding: 5px;
+    box-sizing: border-box;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+.report-element.selected {
+    border: 2px solid blue;
+    outline: none;
+}
+.report-element.selected .resize-handle {
+    display: block;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: blue;
+    border: 1px solid white;
+    z-index: 10;
+}
+
+.report-field .field-text {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+
+/* ── 8. Text Options Modal ── */
+
+#textOptionsModal .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    text-align: left;
+}
+
+#textOptionsModal label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#textOptionsModal select,
+#textOptionsModal input[type="number"],
+#textOptionsModal input[type="color"] {
+    width: calc(100% - 10px);
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#textOptionsModal .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+#textOptionsModal .checkbox-group label {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#textOptionsModal .button-group {
+    text-align: right;
+    margin-top: 20px;
+}
+
+#textOptionsModal button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+}
+#textOptionsModal button:hover { background-color: #0056b3; }
+
+
+/* ── 9. Relation Canvas ── */
+
+#relationCanvas svg {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.relation-table {
+    position: absolute;
+    z-index: 1;
+}
+
+
+/* ── 10. Form Editor ── */
+
+.form-element {
+    border: 1px dashed #999;
+    position: absolute;
+    background-color: transparent;
+    padding: 5px;
+    box-sizing: border-box;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+.form-element.selected { border: 2px solid blue; }
+.form-element .resize-handle { display: none; }
+.form-element.selected .resize-handle {
+    display: block;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: blue;
+    border: 1px solid white;
+    z-index: 10;
+}
+
+.selection-border {
+    position: absolute;
+    inset: 0;
+    border: 2px solid blue;
+    pointer-events: none;
+    z-index: 1;
+    box-sizing: border-box;
+}
+
+/* Resize handle positions (shared by report & form elements) */
+.resize-handle.top-left     { top: -5px;    left: -5px;   cursor: nwse-resize; }
+.resize-handle.top-right    { top: -5px;    right: -5px;  cursor: nesw-resize; }
+.resize-handle.bottom-left  { bottom: -5px; left: -5px;   cursor: nesw-resize; }
+.resize-handle.bottom-right { bottom: -5px; right: -5px;  cursor: nwse-resize; }
+
+
+/* ── 11. Quick / Menu icons ── */
+
+.quick-section h3 { margin-bottom: 10px; }
+
+.quick-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.quick-icon {
+    width: 110px;
+    height: 80px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px;
+}
+.quick-icon:hover { background-color: #e0e0e0; }
+.quick-icon .icon { font-size: 24px; }
+
+.menu-icon {
     width: 96px;
     text-align: center;
     cursor: pointer;
-  }
-
-  .menu-icon img {
+}
+.menu-icon img {
     width: 96px;
     height: 96px;
     object-fit: contain;
-  }
-
-  .menu-icon div {
+}
+.menu-icon div {
     margin-top: 6px;
     font-size: 14px;
-  }
-  
-  .modal-icons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
-  margin-top: 20px;
+}
+
+.modal-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .modal-icon {
-  width: 96px;
-  height: 120px;
-  text-align: center;
-  cursor: pointer;
-  font-family: sans-serif;
+    width: 96px;
+    height: 120px;
+    text-align: center;
+    cursor: pointer;
+    font-family: sans-serif;
 }
-
 .modal-icon .icon {
-  font-size: 48px;
-  line-height: 96px;
+    font-size: 48px;
+    line-height: 96px;
+}
+.modal-icon .label {
+    font-size: 14px;
+    margin-top: 6px;
 }
 
-.modal-icon .label {
-  font-size: 14px;
-  margin-top: 6px;
-}
+
+/* ── 12. Загальні елементи форми ── */
 
 select {
-  background-color: #f0f0f0;
-  color: #333;
-  border: none;
-  padding: 8px 12px;
-  font-size: 16px;
-  font-family: sans-serif;
-  border-radius: 5px; /* Закруглення кутів */
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    padding: 8px 12px;
+    font-size: 16px;
+    font-family: sans-serif;
+    border-radius: 5px;
 }
- .square-btn {
+
+input[type="date"] {
+    border: none;
+    outline: none;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.square-btn {
     width: 64px;
     height: 64px;
     background-color: #f0f0f0;
@@ -466,62 +423,71 @@ select {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-  }
-
-  .square-btn:hover {
-    background-color: #e0e0e0;
-  }
-
-  .square-btn .icon {
+}
+.square-btn:hover { background-color: #e0e0e0; }
+.square-btn .icon {
     font-size: 24px;
     line-height: 1;
-  }
-
-  .square-btn .label {
+}
+.square-btn .label {
     font-size: 10px;
     margin-top: 2px;
-  }
-
-input[type="date"] {
-    border: none;         /* Прибирає рамку */
-    outline: none;        /* Прибирає рамку при фокусі */
-    background: transparent; /* повністю прозоре тло */
-    appearance: none;  /* Для більшості браузерів */
-    -webkit-appearance: none; /* Для Chrome/Safari */
-    -moz-appearance: none;    /* Для Firefox */
 }
+
+
+/* ── 13. Стан виділення ── */
 
 .selected-row {
-  outline: 2px solid #3399FF; /* блакитна рамка */
-  outline-offset: -2px; /* щоб рамка була зсередини */
+    outline: 2px solid #3399FF;
+    outline-offset: -2px;
 }
-.query-alias-input {
-  margin-top: 4px;
-  display: block;
-  width: 100%;
-  height:1.5em;
+
+td.selected {
+    background-color: #cce5ff;
+    border: 2px solid #3399ff;
 }
+
+
+/* ── 14. DB Structure Panel ── */
 
 #dbStructurePanel ul { list-style: none; padding-left: 8px; margin: 6px 0; }
-.db-table { margin-bottom:10px; border-bottom:1px solid #efefef; padding-bottom:8px; }
-.db-table .table-header { display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
-.db-field { display:flex; justify-content:space-between; padding:4px 2px; font-size:13px; color:#222; }
-.db-field .field-name { cursor:pointer; }
-.db-field small { color:#666; }
-#ownSqlModal {
-  pointer-events: none; /* не ловить кліки */
+
+.db-table {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #efefef;
+    padding-bottom: 8px;
+}
+.db-table .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
 }
 
-#ownSqlModal > div {
-  pointer-events: auto; /* але всередині — активне */
+.db-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 2px;
+    font-size: 13px;
+    color: #222;
 }
+.db-field .field-name { cursor: pointer; }
+.db-field small { color: #666; }
 
-#structureContent {
-    background-color: #ffffff; /* стандартний колір */
-}
-/* ========== ТЕМНА ТЕМА ========== */
+#structureContent { background-color: #ffffff; }
 
-/* ── CSS-змінні темної теми ── */
+
+/* ── 15. Own SQL Modal ── */
+
+#ownSqlModal { pointer-events: none; }
+#ownSqlModal > div { pointer-events: auto; }
+
+
+/* ============================================================
+   16. ТЕМНА ТЕМА
+   ============================================================ */
+
+/* ── CSS-змінні ── */
 body.dark-theme {
     --dt-bg:          #1e1e1e;
     --dt-surface:     #2d2d2d;
@@ -546,22 +512,25 @@ body.dark-theme {
     background-color: var(--dt-bg);
     color: var(--dt-text);
 }
+
 body.dark-theme .menu-bar {
     background-color: var(--dt-surface);
     border-bottom: 1px solid var(--dt-border);
 }
-body.dark-theme .menu-item > span,
-body.dark-theme .menu-item { color: var(--dt-text); }
+body.dark-theme .menu-item,
+body.dark-theme .menu-item > span { color: var(--dt-text); }
 body.dark-theme .dropdown {
     background-color: var(--dt-surface);
     border: 1px solid var(--dt-border);
 }
 body.dark-theme .dropdown a { color: var(--dt-text); }
 body.dark-theme .dropdown a:hover { background-color: var(--dt-hover); }
+
 body.dark-theme .title-bar {
     background-color: var(--dt-surface);
     color: var(--dt-text);
 }
+
 body.dark-theme input,
 body.dark-theme select,
 body.dark-theme textarea,
@@ -584,7 +553,7 @@ body.dark-theme li {
 }
 body.dark-theme li:hover { background-color: var(--dt-hover); }
 
-/* Виділений елемент у списках */
+/* Виділені елементи списків */
 body.dark-theme li.selected,
 body.dark-theme .selected-item,
 body.dark-theme .list-item.selected,
@@ -599,7 +568,7 @@ body.dark-theme #dataWorkList li.selected {
     border-left: 3px solid #ffaa00;
 }
 
-/* Списки з border-bottom (спільний патерн) */
+/* Списки з border-bottom */
 body.dark-theme #storageList li,
 body.dark-theme #savedTablesList li,
 body.dark-theme #savedQueriesList li,
@@ -618,6 +587,7 @@ body.dark-theme #reportList li:hover,
 body.dark-theme #savedFormsList li:hover,
 body.dark-theme #dataWorkList li:hover,
 body.dark-theme #tableListInModal li:hover { background-color: var(--dt-hover); }
+
 body.dark-theme #tableListInModal li.selected {
     background-color: var(--dt-accent) !important;
     color: white !important;
@@ -629,6 +599,7 @@ body.dark-theme table {
     color: var(--dt-text);
     border-color: var(--dt-border);
 }
+
 body.dark-theme th,
 body.dark-theme thead th,
 body.dark-theme .query-table th,
@@ -643,6 +614,7 @@ body.dark-theme .table-header {
     border-color: var(--dt-border-hi) !important;
     font-weight: bold;
 }
+
 body.dark-theme td,
 body.dark-theme tbody td,
 body.dark-theme .query-table td,
@@ -655,6 +627,7 @@ body.dark-theme #dataViewBody td {
     color: var(--dt-text);
     border-color: var(--dt-border);
 }
+
 body.dark-theme th.pk,
 body.dark-theme td.pk {
     background-color: var(--dt-surface-hi2) !important;
@@ -692,16 +665,19 @@ body.dark-theme [id$="Modal"] > div:not(.alert-modal-content) {
     color: var(--dt-text) !important;
     border-color: var(--dt-border) !important;
 }
+
 body.dark-theme .modal-content h2,
 body.dark-theme .modal-content h3,
 body.dark-theme [id$="Modal"] h2,
 body.dark-theme [id$="Modal"] h3,
 body.dark-theme [id$="Modal"] label { color: var(--dt-text) !important; }
+
 body.dark-theme .alert-modal-content {
     background-color: #3a2a2a !important;
     color: var(--dt-text) !important;
     border: 3px solid #ff5555 !important;
 }
+
 body.dark-theme #editLabelModal > div {
     background-color: var(--dt-surface) !important;
     border-color: var(--dt-border) !important;
@@ -712,7 +688,7 @@ body.dark-theme #editInput {
     border-color: var(--dt-border-hi);
 }
 
-/* ── relationCanvas ── */
+/* ── Relation Canvas ── */
 body.dark-theme #relationCanvas {
     background-color: var(--dt-canvas) !important;
     border: 1px solid var(--dt-border) !important;
@@ -721,11 +697,12 @@ body.dark-theme #relationCanvas {
 body.dark-theme #relationCanvas svg { background-color: transparent; }
 body.dark-theme #relationCanvas svg line { stroke: var(--dt-text-muted) !important; }
 body.dark-theme #relationCanvas svg text { fill: var(--dt-text) !important; }
+
 body.dark-theme .relation-table {
     background-color: var(--dt-surface) !important;
     border: 1px solid var(--dt-border-hi) !important;
     border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 body.dark-theme .relation-table .table-header {
     background-color: var(--dt-surface-hi) !important;
@@ -749,11 +726,11 @@ body.dark-theme .relation-table .field-item.pk-field {
 }
 body.dark-theme .relation-table .field-item.fk-field { color: var(--dt-accent-lo); }
 
-/* ── structurePanel ── */
+/* ── Structure Panel ── */
 body.dark-theme #structurePanel {
     background-color: var(--dt-surface) !important;
     border-left: 1px solid var(--dt-border) !important;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
 }
 body.dark-theme #structurePanel > div:first-child {
     background-color: var(--dt-surface-hi) !important;
@@ -789,7 +766,7 @@ body.dark-theme .db-field .field-name {
 body.dark-theme .db-field .field-name:hover { color: var(--dt-accent); }
 body.dark-theme .db-field small { color: var(--dt-text-muted) !important; }
 
-/* ── reportCanvas / formCanvas ── */
+/* ── Report / Form canvas ── */
 body.dark-theme #reportCanvas,
 body.dark-theme #formCanvas,
 body.dark-theme #reportPreviewCanvas {
@@ -799,7 +776,7 @@ body.dark-theme #reportPreviewCanvas {
 body.dark-theme .report-element,
 body.dark-theme .form-element {
     border-color: #666 !important;
-    background-color: rgba(60,60,60,0.8) !important;
+    background-color: rgba(60, 60, 60, 0.8) !important;
 }
 body.dark-theme .report-element .field-text,
 body.dark-theme .form-element .field-text { color: var(--dt-text) !important; }
@@ -807,19 +784,19 @@ body.dark-theme .report-element.selected,
 body.dark-theme .form-element.selected { border: 2px solid var(--dt-accent) !important; }
 body.dark-theme #reportCanvas.grid-visible {
     background-image:
-        repeating-linear-gradient(0deg,   #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px),
-        repeating-linear-gradient(90deg, #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px) !important;
+        repeating-linear-gradient(  0deg, #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px),
+        repeating-linear-gradient( 90deg, #555 0, #555 1px, transparent 1px, transparent 19px, #555 19px, #555 20px) !important;
     background-size: 20px 20px !important;
 }
 body.dark-theme .report-label,
 body.dark-theme .form-label {
     border-color: var(--dt-text-muted) !important;
-    background-color: rgba(100,100,100,0.5) !important;
+    background-color: rgba(100, 100, 100, 0.5) !important;
 }
 body.dark-theme .report-field,
 body.dark-theme .form-field {
     border-color: #2c6e2c !important;
-    background-color: rgba(40,80,40,0.3) !important;
+    background-color: rgba(40, 80, 40, 0.3) !important;
 }
 
 /* ── Кнопки ── */
@@ -830,7 +807,7 @@ body.dark-theme button.square-btn {
 }
 body.dark-theme button.square-btn:hover { background-color: var(--dt-surface-hi2); }
 
-/* ── Select / input options ── */
+/* ── Select options ── */
 body.dark-theme select option {
     background-color: var(--dt-input-bg);
     color: var(--dt-text);
@@ -855,6 +832,7 @@ body.dark-theme #dataFieldSelect {
 
 /* ── Різне ── */
 body.dark-theme input[type="radio"] { accent-color: var(--dt-accent); }
+
 body.dark-theme .selected-row {
     outline: 2px solid var(--dt-accent);
     outline-offset: -2px;
@@ -883,9 +861,11 @@ body.dark-theme ::-webkit-scrollbar-thumb {
 body.dark-theme ::-webkit-scrollbar-thumb:hover { background: #777; }
 
 
-/* ========== МОДАЛЬНИЙ РЕДАКТОР СПИСКУ (#listEditorOverlay) ========== */
+/* ============================================================
+   17. LIST EDITOR MODAL (#listEditorOverlay)
+   ============================================================ */
 
-/* ── Змінні: світла тема (за замовчуванням) ── */
+/* ── Змінні: світла тема ── */
 #listEditorOverlay {
     --le-accent:        #1a6090;
     --le-accent-rgb:    26, 96, 144;
@@ -926,10 +906,13 @@ body.dark-theme #listEditorOverlay {
 }
 
 #listEditorOverlay {
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(1px);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 9999;
     animation: listOverlayIn 0.2s ease;
 }
@@ -939,9 +922,11 @@ body.dark-theme #listEditorOverlay {
     background: var(--le-modal-bg);
     border: 1px solid var(--le-modal-border);
     border-radius: 10px;
-    width: 380px; max-width: 92vw;
+    width: 380px;
+    max-width: 92vw;
     max-height: 75vh;
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--le-shadow);
     overflow: hidden;
     animation: listModalIn 0.22s ease;
@@ -952,23 +937,29 @@ body.dark-theme #listEditorOverlay {
 }
 
 #listEditorModal .le-body {
-    padding: 5px 5px;
-    overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    
+    padding: 5px;
+    overflow-y: auto;
+    flex: 1;
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
 }
 #listEditorModal .le-body::-webkit-scrollbar { width: 5px; }
 #listEditorModal .le-body::-webkit-scrollbar-thumb {
-    background: var(--le-scrollbar); border-radius: 4px;
+    background: var(--le-scrollbar);
+    border-radius: 4px;
 }
 
 #listEditorModal .le-item {
-    display: flex; align-items: center; gap: 9px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
     padding: 9px 10px;
     background: var(--le-item-bg);
-    border: 1px solid transparent; border-radius: 8px;
-    cursor: pointer; transition: background 0.18s, border-color 0.18s;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
     animation: leItemIn 0.18s ease;
     color: var(--le-text-dim);
 }
@@ -986,53 +977,86 @@ body.dark-theme #listEditorOverlay {
 #listEditorModal .le-item.le-active .le-text { color: var(--le-text); font-weight: 600; }
 
 #listEditorModal .le-rank {
-    font-size: 0.68rem; color: var(--le-text-muted);
-    min-width: 14px; text-align: center; flex-shrink: 0;
+    font-size: 0.68rem;
+    color: var(--le-text-muted);
+    min-width: 14px;
+    text-align: center;
+    flex-shrink: 0;
 }
 #listEditorModal .le-check {
-    font-size: 0.75rem; color: var(--le-accent); flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--le-accent);
+    flex-shrink: 0;
 }
 #listEditorModal .le-text {
-    flex: 1; font-size: 1rem; color: var(--le-text-dim);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex: 1;
+    font-size: 1rem;
+    color: var(--le-text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #listEditorModal .le-del {
-    width: 22px; height: 22px;
-    display: flex; align-items: center; justify-content: center;
-    background: transparent; border: 1px solid transparent; border-radius: 5px;
-    color: var(--le-text-muted); font-size: 0.78rem; cursor: pointer;
-    transition: background 0.18s, color 0.18s, border-color 0.18s; flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--le-text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+    flex-shrink: 0;
 }
 #listEditorModal .le-del:hover {
-    background: rgba(200, 40, 40, 0.1); color: #c02020;
+    background: rgba(200, 40, 40, 0.1);
+    color: #c02020;
     border-color: rgba(200, 40, 40, 0.35);
 }
 body.dark-theme #listEditorModal .le-del:hover {
-    background: rgba(255, 70, 70, 0.12); color: #ff6666;
+    background: rgba(255, 70, 70, 0.12);
+    color: #ff6666;
     border-color: rgba(255, 70, 70, 0.3);
 }
 
 #listEditorModal .le-input-row {
-    display: flex; align-items: center;
+    display: flex;
+    align-items: center;
     padding: 7px 9px;
     background: var(--le-input-bg);
-    border: 1px solid var(--le-input-border); border-radius: 8px;
+    border: 1px solid var(--le-input-border);
+    border-radius: 8px;
     animation: leItemIn 0.18s ease;
 }
 #listEditorModal .le-input-row input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--le-text); font-size: 0.87rem;
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--le-text);
+    font-size: 0.87rem;
 }
 #listEditorModal .le-input-row input::placeholder { color: var(--le-text-muted); }
 
 #listEditorModal .le-add-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 100%; padding: 9px; margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 9px;
+    margin-top: 2px;
     background: transparent;
-    border: 1px dashed rgba(var(--le-accent-rgb), 0.45); border-radius: 8px;
-    color: var(--le-accent); font-size: 1.25rem; font-weight: 500;
-    cursor: pointer; transition: background 0.18s, border-color 0.18s;
+    border: 1px dashed rgba(var(--le-accent-rgb), 0.45);
+    border-radius: 8px;
+    color: var(--le-accent);
+    font-size: 1.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
     font-family: inherit;
 }
 #listEditorModal .le-add-btn:hover {
@@ -1041,143 +1065,134 @@ body.dark-theme #listEditorModal .le-del:hover {
 }
 
 
-/* ========== EXPRESSION BUILDER MODAL ========== */
+/* ============================================================
+   18. EXPRESSION BUILDER MODAL (#exprBuilderModal)
+   ============================================================ */
 
-/* ── CSS-змінні: світла тема (за замовчуванням) ── */
+/* ── Змінні: світла тема ── */
 #exprBuilderModal {
-    --eb-overlay:       rgba(0, 0, 0, 0.45);
-    --eb-bg:            #ffffff;
-    --eb-shadow:        0 4px 24px rgba(0, 0, 0, 0.2);
-    --eb-border:        #d1d5db;
-    --eb-text:          #111111;
-    --eb-text-label:    #374151;
-    --eb-text-muted:    #9ca3af;
+    --eb-overlay:        rgba(0, 0, 0, 0.45);
+    --eb-bg:             #ffffff;
+    --eb-shadow:         0 4px 24px rgba(0, 0, 0, 0.2);
+    --eb-border:         #d1d5db;
+    --eb-text:           #111111;
+    --eb-text-label:     #374151;
+    --eb-text-muted:     #9ca3af;
 
-    /* Display */
-    --eb-display-bg:    #f0f2f5;
-    --eb-display-ok:    #f0fdf4;
-    --eb-display-err:   #fef2f2;
-    --eb-border-neutral:#d1d5db;
-    --eb-border-ok:     #22c55e;
-    --eb-border-err:    #ef4444;
+    --eb-display-bg:     #f0f2f5;
+    --eb-display-ok:     #f0fdf4;
+    --eb-display-err:    #fef2f2;
+    --eb-border-neutral: #d1d5db;
+    --eb-border-ok:      #22c55e;
+    --eb-border-err:     #ef4444;
 
-    /* Alias input */
-    --eb-input-bg:      #ffffff;
-    --eb-input-border:  #d1d5db;
+    --eb-input-bg:       #ffffff;
+    --eb-input-border:   #d1d5db;
 
-    /* Btn: digit */
-    --eb-btn-bg:        #e5e7eb;
-    --eb-btn-border:    #9ca3af;
-    --eb-btn-text:      #111111;
-    --eb-btn-hover:     #d1d5db;
+    --eb-btn-bg:         #e5e7eb;
+    --eb-btn-border:     #9ca3af;
+    --eb-btn-text:       #111111;
+    --eb-btn-hover:      #d1d5db;
 
-    /* Btn: operator */
-    --eb-op-bg:         #fef3c7;
-    --eb-op-border:     #f59e0b;
-    --eb-op-text:       #92400e;
-    --eb-op-hover:      #fde68a;
+    --eb-op-bg:          #fef3c7;
+    --eb-op-border:      #f59e0b;
+    --eb-op-text:        #92400e;
+    --eb-op-hover:       #fde68a;
 
-    /* Btn: field/func */
-    --eb-field-bg:      #dbeafe;
-    --eb-field-border:  #3b82f6;
-    --eb-field-text:    #1e40af;
-    --eb-field-hover:   #bfdbfe;
+    --eb-field-bg:       #dbeafe;
+    --eb-field-border:   #3b82f6;
+    --eb-field-text:     #1e40af;
+    --eb-field-hover:    #bfdbfe;
 
-    /* Btn: field (field select) */
-    --eb-fsel-bg:       #e0e7ff;
-    --eb-fsel-border:   #6366f1;
-    --eb-fsel-text:     #3730a3;
+    --eb-fsel-bg:        #e0e7ff;
+    --eb-fsel-border:    #6366f1;
+    --eb-fsel-text:      #3730a3;
 
-    /* Btn: delete */
-    --eb-del-bg:        #fee2e2;
-    --eb-del-border:    #ef4444;
-    --eb-del-text:      #991b1b;
-    --eb-del-hover:     #fecaca;
+    --eb-del-bg:         #fee2e2;
+    --eb-del-border:     #ef4444;
+    --eb-del-text:       #991b1b;
+    --eb-del-hover:      #fecaca;
 
-    /* Btn: OK */
-    --eb-ok-bg:         #dcfce7;
-    --eb-ok-border:     #22c55e;
-    --eb-ok-text:       #166534;
-    --eb-ok-hover:      #bbf7d0;
+    --eb-ok-bg:          #dcfce7;
+    --eb-ok-border:      #22c55e;
+    --eb-ok-text:        #166534;
+    --eb-ok-hover:       #bbf7d0;
 
-    /* Btn: close */
-    --eb-close-bg:      #f3f4f6;
-    --eb-close-border:  #d1d5db;
-    --eb-close-hover:   #e5e7eb;
+    --eb-close-bg:       #f3f4f6;
+    --eb-close-border:   #d1d5db;
+    --eb-close-hover:    #e5e7eb;
 
-    /* FUNC dropdown */
-    --eb-func-bg:       #ffffff;
-    --eb-func-border:   #d1d5db;
-    --eb-func-item-bg:  #f9fafb;
+    --eb-func-bg:        #ffffff;
+    --eb-func-border:    #d1d5db;
+    --eb-func-item-bg:   #f9fafb;
     --eb-func-item-hover:#e5e7eb;
-    --eb-func-text:     #111111;
-    --eb-func-divider:  #e5e7eb;
+    --eb-func-text:      #111111;
+    --eb-func-divider:   #e5e7eb;
 
-    /* computed-expr-display in query row */
-    --eb-tag-color:     #ea580c;
+    --eb-tag-color:      #ea580c;
 }
 
-/* ── CSS-змінні: темна тема ── */
+/* ── Змінні: темна тема ── */
 body.dark-theme #exprBuilderModal {
-    --eb-overlay:       rgba(0, 0, 0, 0.65);
-    --eb-bg:            var(--dt-surface);
-    --eb-shadow:        0 4px 32px rgba(0, 0, 0, 0.55);
-    --eb-border:        var(--dt-border);
-    --eb-text:          var(--dt-text);
-    --eb-text-label:    var(--dt-text-dim);
-    --eb-text-muted:    var(--dt-text-muted);
+    --eb-overlay:        rgba(0, 0, 0, 0.65);
+    --eb-bg:             var(--dt-surface);
+    --eb-shadow:         0 4px 32px rgba(0, 0, 0, 0.55);
+    --eb-border:         var(--dt-border);
+    --eb-text:           var(--dt-text);
+    --eb-text-label:     var(--dt-text-dim);
+    --eb-text-muted:     var(--dt-text-muted);
 
-    --eb-display-bg:    var(--dt-surface-hi);
-    --eb-display-ok:    #1a3a1a;
-    --eb-display-err:   #3a1a1a;
-    --eb-border-neutral:var(--dt-border-hi);
-    --eb-border-ok:     #22c55e;
-    --eb-border-err:    #ef4444;
+    --eb-display-bg:     var(--dt-surface-hi);
+    --eb-display-ok:     #1a3a1a;
+    --eb-display-err:    #3a1a1a;
+    --eb-border-neutral: var(--dt-border-hi);
+    --eb-border-ok:      #22c55e;
+    --eb-border-err:     #ef4444;
 
-    --eb-input-bg:      var(--dt-input-bg);
-    --eb-input-border:  var(--dt-border-hi);
+    --eb-input-bg:       var(--dt-input-bg);
+    --eb-input-border:   var(--dt-border-hi);
 
-    --eb-btn-bg:        var(--dt-surface-hi);
-    --eb-btn-border:    var(--dt-border-hi);
-    --eb-btn-text:      var(--dt-text);
-    --eb-btn-hover:     var(--dt-surface-hi2);
+    --eb-btn-bg:         var(--dt-surface-hi);
+    --eb-btn-border:     var(--dt-border-hi);
+    --eb-btn-text:       var(--dt-text);
+    --eb-btn-hover:      var(--dt-surface-hi2);
 
-    --eb-op-bg:         #3a2e10;
-    --eb-op-border:     #b07a10;
-    --eb-op-text:       #fbbf24;
-    --eb-op-hover:      #4a3a18;
+    --eb-op-bg:          #3a2e10;
+    --eb-op-border:      #b07a10;
+    --eb-op-text:        #fbbf24;
+    --eb-op-hover:       #4a3a18;
 
-    --eb-field-bg:      #172554;
-    --eb-field-border:  #2563eb;
-    --eb-field-text:    #93c5fd;
-    --eb-field-hover:   #1e3a8a;
+    --eb-field-bg:       #172554;
+    --eb-field-border:   #2563eb;
+    --eb-field-text:     #93c5fd;
+    --eb-field-hover:    #1e3a8a;
 
-    --eb-fsel-bg:       #1e1b4b;
-    --eb-fsel-border:   #4f46e5;
-    --eb-fsel-text:     #a5b4fc;
+    --eb-fsel-bg:        #1e1b4b;
+    --eb-fsel-border:    #4f46e5;
+    --eb-fsel-text:      #a5b4fc;
 
-    --eb-del-bg:        #3a1010;
-    --eb-del-border:    #b91c1c;
-    --eb-del-text:      #fca5a5;
-    --eb-del-hover:     #4a1818;
+    --eb-del-bg:         #3a1010;
+    --eb-del-border:     #b91c1c;
+    --eb-del-text:       #fca5a5;
+    --eb-del-hover:      #4a1818;
 
-    --eb-ok-bg:         #14532d;
-    --eb-ok-border:     #16a34a;
-    --eb-ok-text:       #86efac;
-    --eb-ok-hover:      #166534;
+    --eb-ok-bg:          #14532d;
+    --eb-ok-border:      #16a34a;
+    --eb-ok-text:        #86efac;
+    --eb-ok-hover:       #166534;
 
-    --eb-close-bg:      var(--dt-surface-hi);
-    --eb-close-border:  var(--dt-border-hi);
-    --eb-close-hover:   var(--dt-surface-hi2);
+    --eb-close-bg:       var(--dt-surface-hi);
+    --eb-close-border:   var(--dt-border-hi);
+    --eb-close-hover:    var(--dt-surface-hi2);
 
-    --eb-func-bg:       var(--dt-surface);
-    --eb-func-border:   var(--dt-border-hi);
-    --eb-func-item-bg:  var(--dt-surface-hi);
+    --eb-func-bg:        var(--dt-surface);
+    --eb-func-border:    var(--dt-border-hi);
+    --eb-func-item-bg:   var(--dt-surface-hi);
     --eb-func-item-hover:var(--dt-surface-hi2);
-    --eb-func-text:     var(--dt-text);
-    --eb-func-divider:  var(--dt-border);
+    --eb-func-text:      var(--dt-text);
+    --eb-func-divider:   var(--dt-border);
 
-    --eb-tag-color:     #fb923c;
+    --eb-tag-color:      #fb923c;
 }
 
 /* ── Overlay ── */
@@ -1203,7 +1218,7 @@ body.dark-theme #exprBuilderModal {
     border: 1px solid var(--eb-border);
 }
 
-/* ── Header row ── */
+/* ── Header ── */
 #exprBuilderModal .eb-header {
     display: flex;
     align-items: center;
@@ -1250,9 +1265,95 @@ body.dark-theme #exprBuilderModal {
     word-break: break-all;
     overflow: auto;
 }
-#exprBuilderModal .eb-display.eb-ok  { border-color: var(--eb-border-ok);  background: var(--eb-display-ok);  }
+#exprBuilderModal .eb-display.eb-ok  { border-color: var(--eb-border-ok);  background: var(--eb-display-ok); }
 #exprBuilderModal .eb-display.eb-err { border-color: var(--eb-border-err); background: var(--eb-display-err); }
 #exprBuilderModal .eb-empty { color: var(--eb-text-muted); }
+
+/* ── Toolbar: Add Field | Functions | , | DEL ── */
+.eb-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: flex-start;
+}
+.eb-toolbar .eb-btn { min-height: 40px; }
+
+/* Add Field */
+.eb-field-wrap {
+    flex: 3;
+    position: relative;
+    min-width: 0;
+}
+.eb-field-wrap > .eb-btn-field {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+}
+/* Dropdowns абсолютно вниз — не зсувають comma/DEL */
+.eb-field-wrap .eb-field-dropdowns {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Functions */
+.eb-func-wrap {
+    flex: 3;
+    position: relative;
+    min-width: 0;
+}
+.eb-func-wrap > .eb-btn-field {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+/* Comma */
+.eb-toolbar .eb-btn-comma {
+    flex: 1;
+    height: 40px;
+    min-height: 40px;
+    min-width: 87px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    box-sizing: border-box;
+    background: #f0f4ff;
+    border: 1px solid #c0d0ff;
+    color: #2c3e50;
+}
+.eb-toolbar .eb-btn-comma:hover {
+    background: #d0e0ff;
+    border-color: #80a0ff;
+}
+body.dark-theme .eb-toolbar .eb-btn-comma {
+    background: #2a344a;
+    border-color: #4a5a7a;
+    color: #e0e8ff;
+}
+body.dark-theme .eb-toolbar .eb-btn-comma:hover {
+    background: #3a4a6a;
+    border-color: #6a80aa;
+}
+
+/* DEL */
+.eb-toolbar .eb-btn-del {
+    flex: 1;
+    height: 40px;
+    min-height: 40px;
+    min-width: 87px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
 
 /* ── Keyboard grid ── */
 #exprBuilderModal .eb-grid {
@@ -1270,8 +1371,15 @@ body.dark-theme #exprBuilderModal {
     border-width: 1px;
     border-style: solid;
     transition: background 0.12s;
-    min-width: 85px;
+    min-width: 87px;
     max-height: 40px;
+}
+#exprBuilderModal .eb-grid .eb-btn {
+    height: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Digit */
@@ -1307,7 +1415,7 @@ body.dark-theme #exprBuilderModal {
 }
 #exprBuilderModal .eb-btn-ok:hover { background: var(--eb-ok-hover); }
 
-/* Field / Func trigger buttons */
+/* Field / Func trigger */
 #exprBuilderModal .eb-btn-field {
     width: 100%;
     background: var(--eb-field-bg);
@@ -1317,24 +1425,20 @@ body.dark-theme #exprBuilderModal {
 }
 #exprBuilderModal .eb-btn-field:hover { background: var(--eb-field-hover); }
 
-/* Field area wrapper */
-#exprBuilderModal .eb-field-wrap {
-    grid-column: span 2;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-/* Table / field selects */
+/* ── Table / field selects ── */
 #exprBuilderModal .eb-table-select,
 #exprBuilderModal .eb-field-select {
-    width: 90%;
+    height: 40px;
+    width: 100%;
+    min-width: 134px;
     padding: 6px 4px;
     font: 12px system-ui;
     cursor: pointer;
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
+    box-sizing: border-box;
+    box-shadow: var(--eb-shadow);
 }
 #exprBuilderModal .eb-table-select {
     background: var(--eb-field-bg);
@@ -1346,13 +1450,9 @@ body.dark-theme #exprBuilderModal {
     border-color: var(--eb-fsel-border);
     color: var(--eb-fsel-text);
 }
-#exprBuilderModal .eb-field-select:disabled { opacity: 0.5; cursor: default; }
+#exprBuilderModal .eb-field-select:disabled { opacity: 1; cursor: default; }
 
-/* FUNC dropdown wrapper */
-#exprBuilderModal .eb-func-wrap {
-    grid-column: span 2;
-    position: relative;
-}
+/* ── FUNC dropdown ── */
 #exprBuilderModal .eb-func-menu {
     display: none;
     position: absolute;
@@ -1380,7 +1480,7 @@ body.dark-theme #exprBuilderModal {
 #exprBuilderModal .eb-func-item:last-child { border-bottom: none; }
 #exprBuilderModal .eb-func-item:hover { background: var(--eb-func-item-hover); }
 
-/* ── Syntax highlight colours ── */
+/* ── Syntax highlight ── */
 #exprBuilderModal .hl-num   { color: #059669; font-weight: 600; }
 #exprBuilderModal .hl-op    { color: #dc2626; }
 #exprBuilderModal .hl-func  { color: #7c3aed; font-weight: 600; }
@@ -1388,152 +1488,20 @@ body.dark-theme #exprBuilderModal {
 #exprBuilderModal .hl-paren { color: #4b5563; }
 #exprBuilderModal .hl-text  { color: var(--eb-text); }
 
-/* ── computed-expr-display tag in query row ── */
+/* ── computed-expr-display ── */
 .computed-expr-display {
     display: none;
-    margin-top: 4px;
-    font-size: 12px;
+    margin-top: 0;
+    font-size: 13px;
     cursor: pointer;
+    width: 100%;
+    text-align: center;
 }
 .computed-expr-display span {
     color: var(--eb-tag-color, #ea580c);
-    text-decoration: underline dotted;
     cursor: pointer;
-}
-body.dark-theme .computed-expr-display span {
-    color: #fb923c;
-}
-
-/* Кнопка коми */
-.eb-btn-comma {
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    font-weight: bold;
-    background: #f0f4ff !important;
-    border: 1px solid #c0d0ff !important;
-    color: #2c3e50 !important;
-}
-.eb-btn-comma:hover {
-    background: #d0e0ff !important;
-    border-color: #80a0ff !important;
-}
-
-/* Адаптація під темну тему */
-body.dark-theme .eb-btn-comma {
-    background: #2a344a !important;
-    border-color: #4a5a7a !important;
-    color: #e0e8ff !important;
-}
-body.dark-theme .eb-btn-comma:hover {
-    background: #3a4a6a !important;
-    border-color: #6a80aa !important;
-}
-/* Контейнер верхньої панелі */
-.eb-toolbar {
-    display: flex;
-    gap: 5px;
-    /* align-items: stretch; */
-    margin-bottom: 12px;
-}
-
-/* Адаптивна ширина для списків */
-.eb-field-wrap, .eb-func-wrap {
-    flex: 1;
-    min-width: 0; /* Запобігає виходу за межі */
-}
-
-/* Кнопка коми */
-.eb-btn-comma {
-    font-size: 1.2em;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Кнопка коми - однаковий розмір */
-.eb-btn-comma {
-    font-size: 1.2em;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 65px !important;
-    width: auto !important;
-}
-
-/* Контейнер верхньої панелі */
-.eb-toolbar {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
-    align-items: stretch;
-}
-
-/* Обгортка поля - ширина 3 кнопки */
-.eb-field-wrap {
-    flex: 3;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-/* Обгортка функції - ширина 3 кнопки */
-.eb-func-wrap {
-    flex: 3;
-    min-width: 0;
-    position: relative;
-}
-
-/* Кнопка коми - фіксована ширина (1 кнопка) */
-.eb-btn-comma {
-    flex: 1;
-    min-width: 85px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-/* Кнопка DEL - фіксована ширина (1 кнопка) */
-.eb-btn-del {
-    flex: 1;
-    min-width: 85px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Базові кнопки в сітці - однакова висота */
-.eb-grid .eb-btn {
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Кнопки верхньої панелі - однакова висота */
-.eb-toolbar .eb-btn {
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Випадаючі списки поля та таблиці - не збільшують висоту */
-.eb-table-select,
-.eb-field-select {
-    min-height: 34px;
-    height: auto;
     width: 100%;
+    font-size: 13px;
+    border: 1px solid #c0d0ff;
 }
-
-/* Приховування/показ при розгортанні */
-.eb-field-wrap .eb-table-select,
-.eb-field-wrap .eb-field-select {
-    margin-top: 0;
-}
-
-
+body.dark-theme .computed-expr-display span { color: #fb923c; }
