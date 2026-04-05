@@ -1052,40 +1052,36 @@ function runFinalSqlQuery() {
                     isOwnSQL = false;
         }
         
-        if (res.length > 0) {
-            const columns = res[0].columns;
-            const dataRows = res[0].values;
+        const columns = res.length > 0 ? res[0].columns : [];
+        const dataRows = res.length > 0 ? res[0].values : [];
 
-            const schema = columns.map(col => ({
-                title: col,
-                type: "Текст",
-                primaryKey: false,
-                comment: ""
-            }));
+        const schema = columns.map(col => ({
+            title: col,
+            type: "Текст",
+            primaryKey: false,
+            comment: ""
+        }));
 
-            const queryResultTable = {
-                name: internalQueryName,
-                schema: schema,
-                data: dataRows
-            };
+        const queryResultTable = {
+            name: internalQueryName,
+            schema: schema,
+            data: dataRows
+        };
 
-            const existingIndex = queries.results.findIndex(t => t.name === internalQueryName);
-            if (existingIndex !== -1) {
-                queries.results[existingIndex] = queryResultTable;
-                const dataMenu = document.getElementById("data-menu");
-                const existingItem = Array.from(dataMenu.children).find(item => item.textContent === menuDisplayName);
-                if (existingItem) existingItem.remove();
-            } else {
-                queries.results.push(queryResultTable);
-            }
-            
-            addTableToMenu(menuDisplayName);
-
-            closeOwnSqlModal();
-            editData(menuDisplayName);
+        const existingIndex = queries.results.findIndex(t => t.name === internalQueryName);
+        if (existingIndex !== -1) {
+            queries.results[existingIndex] = queryResultTable;
+            const dataMenu = document.getElementById("data-menu");
+            const existingItem = Array.from(dataMenu.children).find(item => item.textContent === menuDisplayName);
+            if (existingItem) existingItem.remove();
         } else {
-            Message(t("queryEmptyResult"));
+            queries.results.push(queryResultTable);
         }
+
+        addTableToMenu(menuDisplayName);
+
+        closeOwnSqlModal();
+        editData(menuDisplayName);
         updateQuickAccessPanel(
                   getCurrentTableNames(),
                   getCurrentQueryNames(),

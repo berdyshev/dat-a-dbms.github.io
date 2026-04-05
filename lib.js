@@ -1023,6 +1023,18 @@ function editData(tableName) {
         body.appendChild(tr);
     });
 
+    if (rows.length === 0 && isQueryTable) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = columns.length || 1;
+        td.style.textAlign = "center";
+        td.style.padding = "16px";
+        td.style.color = "#888";
+        td.textContent = "Запит виконано, але результат порожній.";
+        tr.appendChild(td);
+        body.appendChild(tr);
+    }
+
     document.getElementById("addDataRowBtn").style.display = isReadOnly ? 'none' : 'inline-block';
     document.getElementById("deleteSelectedRowBtn").style.display = isReadOnly ? 'none' : 'inline-block';
     document.getElementById("saveTableDataBtn").style.display = isReadOnly ? 'none' : 'inline-block';
@@ -3164,40 +3176,36 @@ function runFinalSqlQuery() {
                     isOwnSQL = false;
         }
         
-        if (res.length > 0) {
-            const columns = res[0].columns;
-            const dataRows = res[0].values;
+        const columns = res.length > 0 ? res[0].columns : [];
+        const dataRows = res.length > 0 ? res[0].values : [];
 
-            const schema = columns.map(col => ({
-                title: col,
-                type: "Текст",
-                primaryKey: false,
-                comment: ""
-            }));
+        const schema = columns.map(col => ({
+            title: col,
+            type: "Текст",
+            primaryKey: false,
+            comment: ""
+        }));
 
-            const queryResultTable = {
-                name: internalQueryName,
-                schema: schema,
-                data: dataRows
-            };
+        const queryResultTable = {
+            name: internalQueryName,
+            schema: schema,
+            data: dataRows
+        };
 
-            const existingIndex = queries.results.findIndex(t => t.name === internalQueryName);
-            if (existingIndex !== -1) {
-                queries.results[existingIndex] = queryResultTable;
-                const dataMenu = document.getElementById("data-menu");
-                const existingItem = Array.from(dataMenu.children).find(item => item.textContent === menuDisplayName);
-                if (existingItem) existingItem.remove();
-            } else {
-                queries.results.push(queryResultTable);
-            }
-            
-            addTableToMenu(menuDisplayName);
-
-            closeOwnSqlModal();
-            editData(menuDisplayName);
+        const existingIndex = queries.results.findIndex(t => t.name === internalQueryName);
+        if (existingIndex !== -1) {
+            queries.results[existingIndex] = queryResultTable;
+            const dataMenu = document.getElementById("data-menu");
+            const existingItem = Array.from(dataMenu.children).find(item => item.textContent === menuDisplayName);
+            if (existingItem) existingItem.remove();
         } else {
-            Message("Запит виконано, але результат порожній.");
+            queries.results.push(queryResultTable);
         }
+
+        addTableToMenu(menuDisplayName);
+
+        closeOwnSqlModal();
+        editData(menuDisplayName);
         updateQuickAccessPanel(
                   getCurrentTableNames(),
                   getCurrentQueryNames(),

@@ -769,6 +769,18 @@ function editData(tableName) {
         body.appendChild(tr);
     });
 
+    if (rows.length === 0 && isQueryTable) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = columns.length || 1;
+        td.style.textAlign = "center";
+        td.style.padding = "16px";
+        td.style.color = "#888";
+        td.textContent = t("queryEmptyResult");
+        tr.appendChild(td);
+        body.appendChild(tr);
+    }
+
     document.getElementById("addDataRowBtn").style.display = isReadOnly ? 'none' : 'inline-block';
     document.getElementById("deleteSelectedRowBtn").style.display = isReadOnly ? 'none' : 'inline-block';
     document.getElementById("saveTableDataBtn").style.display = isReadOnly ? 'none' : 'inline-block';
