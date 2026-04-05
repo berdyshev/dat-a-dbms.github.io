@@ -1039,3 +1039,501 @@ body.dark-theme #listEditorModal .le-del:hover {
     background: var(--le-item-hover);
     border-color: rgba(var(--le-accent-rgb), 0.75);
 }
+
+
+/* ========== EXPRESSION BUILDER MODAL ========== */
+
+/* ── CSS-змінні: світла тема (за замовчуванням) ── */
+#exprBuilderModal {
+    --eb-overlay:       rgba(0, 0, 0, 0.45);
+    --eb-bg:            #ffffff;
+    --eb-shadow:        0 4px 24px rgba(0, 0, 0, 0.2);
+    --eb-border:        #d1d5db;
+    --eb-text:          #111111;
+    --eb-text-label:    #374151;
+    --eb-text-muted:    #9ca3af;
+
+    /* Display */
+    --eb-display-bg:    #f0f2f5;
+    --eb-display-ok:    #f0fdf4;
+    --eb-display-err:   #fef2f2;
+    --eb-border-neutral:#d1d5db;
+    --eb-border-ok:     #22c55e;
+    --eb-border-err:    #ef4444;
+
+    /* Alias input */
+    --eb-input-bg:      #ffffff;
+    --eb-input-border:  #d1d5db;
+
+    /* Btn: digit */
+    --eb-btn-bg:        #e5e7eb;
+    --eb-btn-border:    #9ca3af;
+    --eb-btn-text:      #111111;
+    --eb-btn-hover:     #d1d5db;
+
+    /* Btn: operator */
+    --eb-op-bg:         #fef3c7;
+    --eb-op-border:     #f59e0b;
+    --eb-op-text:       #92400e;
+    --eb-op-hover:      #fde68a;
+
+    /* Btn: field/func */
+    --eb-field-bg:      #dbeafe;
+    --eb-field-border:  #3b82f6;
+    --eb-field-text:    #1e40af;
+    --eb-field-hover:   #bfdbfe;
+
+    /* Btn: field (field select) */
+    --eb-fsel-bg:       #e0e7ff;
+    --eb-fsel-border:   #6366f1;
+    --eb-fsel-text:     #3730a3;
+
+    /* Btn: delete */
+    --eb-del-bg:        #fee2e2;
+    --eb-del-border:    #ef4444;
+    --eb-del-text:      #991b1b;
+    --eb-del-hover:     #fecaca;
+
+    /* Btn: OK */
+    --eb-ok-bg:         #dcfce7;
+    --eb-ok-border:     #22c55e;
+    --eb-ok-text:       #166534;
+    --eb-ok-hover:      #bbf7d0;
+
+    /* Btn: close */
+    --eb-close-bg:      #f3f4f6;
+    --eb-close-border:  #d1d5db;
+    --eb-close-hover:   #e5e7eb;
+
+    /* FUNC dropdown */
+    --eb-func-bg:       #ffffff;
+    --eb-func-border:   #d1d5db;
+    --eb-func-item-bg:  #f9fafb;
+    --eb-func-item-hover:#e5e7eb;
+    --eb-func-text:     #111111;
+    --eb-func-divider:  #e5e7eb;
+
+    /* computed-expr-display in query row */
+    --eb-tag-color:     #ea580c;
+}
+
+/* ── CSS-змінні: темна тема ── */
+body.dark-theme #exprBuilderModal {
+    --eb-overlay:       rgba(0, 0, 0, 0.65);
+    --eb-bg:            var(--dt-surface);
+    --eb-shadow:        0 4px 32px rgba(0, 0, 0, 0.55);
+    --eb-border:        var(--dt-border);
+    --eb-text:          var(--dt-text);
+    --eb-text-label:    var(--dt-text-dim);
+    --eb-text-muted:    var(--dt-text-muted);
+
+    --eb-display-bg:    var(--dt-surface-hi);
+    --eb-display-ok:    #1a3a1a;
+    --eb-display-err:   #3a1a1a;
+    --eb-border-neutral:var(--dt-border-hi);
+    --eb-border-ok:     #22c55e;
+    --eb-border-err:    #ef4444;
+
+    --eb-input-bg:      var(--dt-input-bg);
+    --eb-input-border:  var(--dt-border-hi);
+
+    --eb-btn-bg:        var(--dt-surface-hi);
+    --eb-btn-border:    var(--dt-border-hi);
+    --eb-btn-text:      var(--dt-text);
+    --eb-btn-hover:     var(--dt-surface-hi2);
+
+    --eb-op-bg:         #3a2e10;
+    --eb-op-border:     #b07a10;
+    --eb-op-text:       #fbbf24;
+    --eb-op-hover:      #4a3a18;
+
+    --eb-field-bg:      #172554;
+    --eb-field-border:  #2563eb;
+    --eb-field-text:    #93c5fd;
+    --eb-field-hover:   #1e3a8a;
+
+    --eb-fsel-bg:       #1e1b4b;
+    --eb-fsel-border:   #4f46e5;
+    --eb-fsel-text:     #a5b4fc;
+
+    --eb-del-bg:        #3a1010;
+    --eb-del-border:    #b91c1c;
+    --eb-del-text:      #fca5a5;
+    --eb-del-hover:     #4a1818;
+
+    --eb-ok-bg:         #14532d;
+    --eb-ok-border:     #16a34a;
+    --eb-ok-text:       #86efac;
+    --eb-ok-hover:      #166534;
+
+    --eb-close-bg:      var(--dt-surface-hi);
+    --eb-close-border:  var(--dt-border-hi);
+    --eb-close-hover:   var(--dt-surface-hi2);
+
+    --eb-func-bg:       var(--dt-surface);
+    --eb-func-border:   var(--dt-border-hi);
+    --eb-func-item-bg:  var(--dt-surface-hi);
+    --eb-func-item-hover:var(--dt-surface-hi2);
+    --eb-func-text:     var(--dt-text);
+    --eb-func-divider:  var(--dt-border);
+
+    --eb-tag-color:     #fb923c;
+}
+
+/* ── Overlay ── */
+#exprBuilderModal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: var(--eb-overlay);
+}
+
+/* ── Modal card ── */
+#exprBuilderModal .eb-card {
+    background: var(--eb-bg);
+    border-radius: 8px;
+    box-shadow: var(--eb-shadow);
+    padding: 16px;
+    max-width: 460px;
+    width: 100%;
+    font-family: system-ui, sans-serif;
+    border: 1px solid var(--eb-border);
+}
+
+/* ── Header row ── */
+#exprBuilderModal .eb-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+#exprBuilderModal .eb-header-label {
+    font: 600 13px system-ui;
+    white-space: nowrap;
+    color: var(--eb-text-label);
+}
+#exprBuilderModal .eb-alias-input {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid var(--eb-input-border);
+    border-radius: 4px;
+    font: 13px system-ui;
+    background: var(--eb-input-bg);
+    color: var(--eb-text);
+}
+#exprBuilderModal .eb-close-btn {
+    padding: 4px 9px;
+    background: var(--eb-close-bg);
+    border: 1px solid var(--eb-close-border);
+    border-radius: 4px;
+    font: 15px system-ui;
+    cursor: pointer;
+    line-height: 1;
+    color: var(--eb-text);
+}
+#exprBuilderModal .eb-close-btn:hover { background: var(--eb-close-hover); }
+
+/* ── Expression display ── */
+#exprBuilderModal .eb-display {
+    background: var(--eb-display-bg);
+    border: 2px solid var(--eb-border-neutral);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    min-height: 2.6em;
+    font: 14px/1.4 monospace;
+    color: var(--eb-text);
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow: auto;
+}
+#exprBuilderModal .eb-display.eb-ok  { border-color: var(--eb-border-ok);  background: var(--eb-display-ok);  }
+#exprBuilderModal .eb-display.eb-err { border-color: var(--eb-border-err); background: var(--eb-display-err); }
+#exprBuilderModal .eb-empty { color: var(--eb-text-muted); }
+
+/* ── Keyboard grid ── */
+#exprBuilderModal .eb-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+/* ── Base button ── */
+#exprBuilderModal .eb-btn {
+    border-radius: 2px;
+    padding: 8px;
+    font: 14px system-ui;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    transition: background 0.12s;
+    min-width: 85px;
+    max-height: 40px;
+}
+
+/* Digit */
+#exprBuilderModal .eb-btn-digit {
+    background: var(--eb-btn-bg);
+    border-color: var(--eb-btn-border);
+    color: var(--eb-btn-text);
+}
+#exprBuilderModal .eb-btn-digit:hover { background: var(--eb-btn-hover); }
+
+/* Operator */
+#exprBuilderModal .eb-btn-op {
+    background: var(--eb-op-bg);
+    border-color: var(--eb-op-border);
+    color: var(--eb-op-text);
+}
+#exprBuilderModal .eb-btn-op:hover { background: var(--eb-op-hover); }
+
+/* Delete */
+#exprBuilderModal .eb-btn-del {
+    background: var(--eb-del-bg);
+    border-color: var(--eb-del-border);
+    color: var(--eb-del-text);
+}
+#exprBuilderModal .eb-btn-del:hover { background: var(--eb-del-hover); }
+
+/* OK */
+#exprBuilderModal .eb-btn-ok {
+    background: var(--eb-ok-bg);
+    border-color: var(--eb-ok-border);
+    color: var(--eb-ok-text);
+    font-weight: 600;
+}
+#exprBuilderModal .eb-btn-ok:hover { background: var(--eb-ok-hover); }
+
+/* Field / Func trigger buttons */
+#exprBuilderModal .eb-btn-field {
+    width: 100%;
+    background: var(--eb-field-bg);
+    border-color: var(--eb-field-border);
+    color: var(--eb-field-text);
+    font: 13px system-ui;
+}
+#exprBuilderModal .eb-btn-field:hover { background: var(--eb-field-hover); }
+
+/* Field area wrapper */
+#exprBuilderModal .eb-field-wrap {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Table / field selects */
+#exprBuilderModal .eb-table-select,
+#exprBuilderModal .eb-field-select {
+    width: 90%;
+    padding: 6px 4px;
+    font: 12px system-ui;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+}
+#exprBuilderModal .eb-table-select {
+    background: var(--eb-field-bg);
+    border-color: var(--eb-field-border);
+    color: var(--eb-field-text);
+}
+#exprBuilderModal .eb-field-select {
+    background: var(--eb-fsel-bg);
+    border-color: var(--eb-fsel-border);
+    color: var(--eb-fsel-text);
+}
+#exprBuilderModal .eb-field-select:disabled { opacity: 0.5; cursor: default; }
+
+/* FUNC dropdown wrapper */
+#exprBuilderModal .eb-func-wrap {
+    grid-column: span 2;
+    position: relative;
+}
+#exprBuilderModal .eb-func-menu {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--eb-func-bg);
+    border: 1px solid var(--eb-func-border);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    flex-direction: column;
+    z-index: 20;
+}
+#exprBuilderModal .eb-func-menu.show { display: flex; }
+#exprBuilderModal .eb-func-item {
+    background: var(--eb-func-item-bg);
+    color: var(--eb-func-text);
+    border: none;
+    border-bottom: 1px solid var(--eb-func-divider);
+    padding: 6px 10px;
+    font: 12px monospace;
+    text-align: left;
+    cursor: pointer;
+}
+#exprBuilderModal .eb-func-item:last-child { border-bottom: none; }
+#exprBuilderModal .eb-func-item:hover { background: var(--eb-func-item-hover); }
+
+/* ── Syntax highlight colours ── */
+#exprBuilderModal .hl-num   { color: #059669; font-weight: 600; }
+#exprBuilderModal .hl-op    { color: #dc2626; }
+#exprBuilderModal .hl-func  { color: #7c3aed; font-weight: 600; }
+#exprBuilderModal .hl-field { color: var(--eb-tag-color); font-weight: 600; }
+#exprBuilderModal .hl-paren { color: #4b5563; }
+#exprBuilderModal .hl-text  { color: var(--eb-text); }
+
+/* ── computed-expr-display tag in query row ── */
+.computed-expr-display {
+    display: none;
+    margin-top: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.computed-expr-display span {
+    color: var(--eb-tag-color, #ea580c);
+    text-decoration: underline dotted;
+    cursor: pointer;
+}
+body.dark-theme .computed-expr-display span {
+    color: #fb923c;
+}
+
+/* Кнопка коми */
+.eb-btn-comma {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    font-weight: bold;
+    background: #f0f4ff !important;
+    border: 1px solid #c0d0ff !important;
+    color: #2c3e50 !important;
+}
+.eb-btn-comma:hover {
+    background: #d0e0ff !important;
+    border-color: #80a0ff !important;
+}
+
+/* Адаптація під темну тему */
+body.dark-theme .eb-btn-comma {
+    background: #2a344a !important;
+    border-color: #4a5a7a !important;
+    color: #e0e8ff !important;
+}
+body.dark-theme .eb-btn-comma:hover {
+    background: #3a4a6a !important;
+    border-color: #6a80aa !important;
+}
+/* Контейнер верхньої панелі */
+.eb-toolbar {
+    display: flex;
+    gap: 5px;
+    /* align-items: stretch; */
+    margin-bottom: 12px;
+}
+
+/* Адаптивна ширина для списків */
+.eb-field-wrap, .eb-func-wrap {
+    flex: 1;
+    min-width: 0; /* Запобігає виходу за межі */
+}
+
+/* Кнопка коми */
+.eb-btn-comma {
+    font-size: 1.2em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Кнопка коми - однаковий розмір */
+.eb-btn-comma {
+    font-size: 1.2em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 65px !important;
+    width: auto !important;
+}
+
+/* Контейнер верхньої панелі */
+.eb-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    align-items: stretch;
+}
+
+/* Обгортка поля - ширина 3 кнопки */
+.eb-field-wrap {
+    flex: 3;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Обгортка функції - ширина 3 кнопки */
+.eb-func-wrap {
+    flex: 3;
+    min-width: 0;
+    position: relative;
+}
+
+/* Кнопка коми - фіксована ширина (1 кнопка) */
+.eb-btn-comma {
+    flex: 1;
+    min-width: 85px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Кнопка DEL - фіксована ширина (1 кнопка) */
+.eb-btn-del {
+    flex: 1;
+    min-width: 85px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Базові кнопки в сітці - однакова висота */
+.eb-grid .eb-btn {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Кнопки верхньої панелі - однакова висота */
+.eb-toolbar .eb-btn {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Випадаючі списки поля та таблиці - не збільшують висоту */
+.eb-table-select,
+.eb-field-select {
+    min-height: 34px;
+    height: auto;
+    width: 100%;
+}
+
+/* Приховування/показ при розгортанні */
+.eb-field-wrap .eb-table-select,
+.eb-field-wrap .eb-field-select {
+    margin-top: 0;
+}
+
+

@@ -199,7 +199,7 @@ function getQueryTables() {
  * Builds and injects the Expression Builder modal into the DOM (once).
  */
 function ensureExprBuilderModal() {
-    console.log("t test:", t("exprSelectTable"));
+	console.log("t test:", t("exprSelectTable"));
     if (document.getElementById("exprBuilderModal")) return;
 
     const modal = document.createElement("div");
@@ -209,82 +209,82 @@ function ensureExprBuilderModal() {
         align-items:center; justify-content:center;
         background:rgba(0,0,0,0.45);
     `;
-    modal.innerHTML = `
-        <div class="eb-card">
-            <!-- Header: label + alias input + close -->
-            <div class="eb-header">
-                <span class="eb-header-label">${t("exprBuilderTitle")}</span> 
-                <input id="exprBuilderAlias" type="text" class="eb-alias-input"
-                    placeholder="${t("queryAlias")}">
-                <button class="eb-close-btn" onclick="cancelComputedField()"
-                    title="${t("cancel")}">✕</button>
-            </div>
-
-            <!-- Expression display -->
-            <div id="exprBuilderDisplay" class="eb-display">
-                <span class="eb-empty">—</span>
-            </div>
-
-            <!-- 🔹 Верхня панель керування (Flexbox) -->
-            <div class="eb-toolbar">
-                <!-- FIELD two-select panel - ширина 3 кнопки -->
-                <div class="eb-field-wrap" id="exprFieldDropdownWrap">
-                    <button id="exprFieldBtn" class="eb-btn eb-btn-field" onclick="exprShowFieldSelects()">
-                        ${t("exprAddFieldBtn")}
-                    </button>
-                    <select id="exprTableSelect" class="eb-table-select" onchange="exprOnTableChange()"
-                        style="display:none;">
-                        <option value="">${t("exprSelectTable")}</option>
-                    </select>
-                    <select id="exprFieldSelect" class="eb-field-select" onchange="exprOnFieldChange()"
-                        style="display:none;" disabled>
-                        <option value="">${t("exprSelectField")}</option>
-                    </select>
-                </div>
-            
-                <!-- FUNC dropdown - ширина 3 кнопки -->
-                <div class="eb-func-wrap" id="exprFuncDropdownWrap">
-                    <button class="eb-btn eb-btn-field" onclick="exprToggleFuncMenu()">${t("exprFuncBtn")}</button>
-                    <div id="exprFuncMenu" class="eb-func-menu">
-                        ${["ABS(","INSTR(","CONCAT(","LENGTH(","SIGN(","SUBSTR(","ROUND(","TRIM(","REPLACE("].map(f=>
-                            `<button class="eb-func-item" onclick="exprAddFunc('${f}')">${f}</button>`
-                        ).join("")}
-                    </div>
-                </div>
-            
-                <!-- Кнопка коми - однакового розміру з digit/op -->
-                <button class="eb-btn eb-btn-op eb-btn-comma" onclick="exprAdd(',')">,</button>
-            
-                <!-- Кнопка DEL - однакового розміру з digit/op -->
-                <button class="eb-btn eb-btn-del" onclick="exprDel()">⌫</button>
-            </div>
-
-            <!-- 🔹 Цифрова сітка (Grid) -->
-            <div class="eb-grid">
-                <!-- row 1 -->
-                ${["7","8","9"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('*')">*</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('%')">%</button>
-
-                <!-- row 2 -->
-                ${["4","5","6"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('/')">/</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('(')">(</button>
-
-                <!-- row 3 -->
-                ${["1","2","3"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('+')">+</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd(')')">)</button>
-
-                <!-- row 4: 0  .  +/-  -  OK -->
-                <button class="eb-btn eb-btn-digit" onclick="exprAdd('0')">0</button>
-                <button class="eb-btn eb-btn-digit" onclick="exprAdd('.')">.</button>
-                <button class="eb-btn eb-btn-op"    onclick="exprToggleSign()">+/-</button>
-                <button class="eb-btn eb-btn-op"    onclick="exprAdd('-')">-</button>
-                <button class="eb-btn eb-btn-ok"    onclick="confirmComputedField()">${t("exprOK")}</button>
-            </div>
+modal.innerHTML = `
+    <div class="eb-card">
+        <!-- Header: label + alias input + close -->
+        <div class="eb-header">
+            <span class="eb-header-label">${t("exprBuilderTitle")}</span> 
+            <input id="exprBuilderAlias" type="text" class="eb-alias-input"
+                placeholder="${t("queryAlias")}">
+            <button class="eb-close-btn" onclick="cancelComputedField()"
+                title="${t("cancel")}">✕</button>
         </div>
-    `;
+
+        <!-- Expression display -->
+        <div id="exprBuilderDisplay" class="eb-display">
+            <span class="eb-empty">—</span>
+        </div>
+
+        <!-- 🔹 Верхня панель керування (Flexbox) -->
+        <div class="eb-toolbar">
+            <!-- FIELD two-select panel -->
+            <div class="eb-field-wrap" id="exprFieldDropdownWrap">
+                <button id="exprFieldBtn" class="eb-btn eb-btn-field" onclick="exprShowFieldSelects()">
+                    ${t("exprAddFieldBtn")}
+                </button>
+                <select id="exprTableSelect" class="eb-table-select" onchange="exprOnTableChange()"
+                    style="display:none;">
+                    <option value="">${t("exprSelectTable")}</option>
+                </select>
+                <select id="exprFieldSelect" class="eb-field-select" onchange="exprOnFieldChange()"
+                    style="display:none;" disabled>
+                    <option value="">${t("exprSelectField")}</option>
+                </select>
+            </div>
+        
+            <!-- FUNC dropdown -->
+            <div class="eb-func-wrap" id="exprFuncDropdownWrap">
+                <button class="eb-btn eb-btn-field" onclick="exprToggleFuncMenu()">${t("exprFuncBtn")}</button>
+                <div id="exprFuncMenu" class="eb-func-menu">
+                    ${["ABS(","INSTR(","CONCAT(","LENGTH(","SIGN(","SUBSTR(","ROUND(","TRIM(","REPLACE("].map(f=>
+                        `<button class="eb-func-item" onclick="exprAddFunc('${f}')">${f}</button>`
+                    ).join("")}
+                </div>
+            </div>
+        
+            <!-- Comma button -->
+            <button class="eb-btn eb-btn-op" onclick="exprAdd(',')">,</button>
+        
+            <!-- DEL -->
+            <button class="eb-btn eb-btn-del" onclick="exprDel()">⌫</button>
+        </div>
+
+        <!-- 🔹 Цифрова сітка (Grid) -->
+        <div class="eb-grid">
+            <!-- row 1 -->
+            ${["7","8","9"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
+            <button class="eb-btn eb-btn-op" onclick="exprAdd('*')">*</button>
+            <button class="eb-btn eb-btn-op" onclick="exprAdd('%')">%</button>
+
+            <!-- row 2 -->
+            ${["4","5","6"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
+            <button class="eb-btn eb-btn-op" onclick="exprAdd('/')">/</button>
+            <button class="eb-btn eb-btn-op" onclick="exprAdd('(')">(</button>
+
+            <!-- row 3 -->
+            ${["1","2","3"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
+            <button class="eb-btn eb-btn-op" onclick="exprAdd('+')">+</button>
+            <button class="eb-btn eb-btn-op" onclick="exprAdd(')')">)</button>
+
+            <!-- row 4: 0  .  +/-  -  OK -->
+            <button class="eb-btn eb-btn-digit" onclick="exprAdd('0')">0</button>
+            <button class="eb-btn eb-btn-digit" onclick="exprAdd('.')">.</button>
+            <button class="eb-btn eb-btn-op"    onclick="exprToggleSign()">+/-</button>
+            <button class="eb-btn eb-btn-op"    onclick="exprAdd('-')">-</button>
+            <button class="eb-btn eb-btn-ok"    onclick="confirmComputedField()">${t("exprOK")}</button>
+        </div>
+    </div>
+`;
     document.body.appendChild(modal);
 
     // Close FUNC dropdown on outside click
@@ -294,6 +294,7 @@ function ensureExprBuilderModal() {
         }
     });
 }
+
 // ---- Expression Builder state ----
 let _exprValue = "";
 
@@ -660,7 +661,7 @@ function populateFieldDropdown(tableSelect) {
     // Додати опцію "* (всі поля)" на початок
     const starOption = document.createElement("option");
     starOption.value = "*";
-    starOption.textContent = t("queryAllField");
+    starOption.textContent = "* (Всі поля)";
     fieldSelect.appendChild(starOption);
 
     // Додати реальні поля таблиці

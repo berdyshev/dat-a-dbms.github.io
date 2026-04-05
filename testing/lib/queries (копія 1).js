@@ -193,289 +193,31 @@ function getQueryTables() {
     return tables;
 }
 
-// ===================== Expression Builder (computed fields) =====================
-
 /**
- * Builds and injects the Expression Builder modal into the DOM (once).
+ * Populates table dropdown for computed field modal
  */
-function ensureExprBuilderModal() {
-    console.log("t test:", t("exprSelectTable"));
-    if (document.getElementById("exprBuilderModal")) return;
-
-    const modal = document.createElement("div");
-    modal.id = "exprBuilderModal";
-    modal.style.cssText = `
-        display:none; position:fixed; inset:0; z-index:9999;
-        align-items:center; justify-content:center;
-        background:rgba(0,0,0,0.45);
-    `;
-    modal.innerHTML = `
-        <div class="eb-card">
-            <!-- Header: label + alias input + close -->
-            <div class="eb-header">
-                <span class="eb-header-label">${t("exprBuilderTitle")}</span> 
-                <input id="exprBuilderAlias" type="text" class="eb-alias-input"
-                    placeholder="${t("queryAlias")}">
-                <button class="eb-close-btn" onclick="cancelComputedField()"
-                    title="${t("cancel")}">✕</button>
-            </div>
-
-            <!-- Expression display -->
-            <div id="exprBuilderDisplay" class="eb-display">
-                <span class="eb-empty">—</span>
-            </div>
-
-            <!-- 🔹 Верхня панель керування (Flexbox) -->
-            <div class="eb-toolbar">
-                <!-- FIELD two-select panel - ширина 3 кнопки -->
-                <div class="eb-field-wrap" id="exprFieldDropdownWrap">
-                    <button id="exprFieldBtn" class="eb-btn eb-btn-field" onclick="exprShowFieldSelects()">
-                        ${t("exprAddFieldBtn")}
-                    </button>
-                    <select id="exprTableSelect" class="eb-table-select" onchange="exprOnTableChange()"
-                        style="display:none;">
-                        <option value="">${t("exprSelectTable")}</option>
-                    </select>
-                    <select id="exprFieldSelect" class="eb-field-select" onchange="exprOnFieldChange()"
-                        style="display:none;" disabled>
-                        <option value="">${t("exprSelectField")}</option>
-                    </select>
-                </div>
-            
-                <!-- FUNC dropdown - ширина 3 кнопки -->
-                <div class="eb-func-wrap" id="exprFuncDropdownWrap">
-                    <button class="eb-btn eb-btn-field" onclick="exprToggleFuncMenu()">${t("exprFuncBtn")}</button>
-                    <div id="exprFuncMenu" class="eb-func-menu">
-                        ${["ABS(","INSTR(","CONCAT(","LENGTH(","SIGN(","SUBSTR(","ROUND(","TRIM(","REPLACE("].map(f=>
-                            `<button class="eb-func-item" onclick="exprAddFunc('${f}')">${f}</button>`
-                        ).join("")}
-                    </div>
-                </div>
-            
-                <!-- Кнопка коми - однакового розміру з digit/op -->
-                <button class="eb-btn eb-btn-op eb-btn-comma" onclick="exprAdd(',')">,</button>
-            
-                <!-- Кнопка DEL - однакового розміру з digit/op -->
-                <button class="eb-btn eb-btn-del" onclick="exprDel()">⌫</button>
-            </div>
-
-            <!-- 🔹 Цифрова сітка (Grid) -->
-            <div class="eb-grid">
-                <!-- row 1 -->
-                ${["7","8","9"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('*')">*</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('%')">%</button>
-
-                <!-- row 2 -->
-                ${["4","5","6"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('/')">/</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('(')">(</button>
-
-                <!-- row 3 -->
-                ${["1","2","3"].map(v=>`<button class="eb-btn eb-btn-digit" onclick="exprAdd('${v}')">${v}</button>`).join("")}
-                <button class="eb-btn eb-btn-op" onclick="exprAdd('+')">+</button>
-                <button class="eb-btn eb-btn-op" onclick="exprAdd(')')">)</button>
-
-                <!-- row 4: 0  .  +/-  -  OK -->
-                <button class="eb-btn eb-btn-digit" onclick="exprAdd('0')">0</button>
-                <button class="eb-btn eb-btn-digit" onclick="exprAdd('.')">.</button>
-                <button class="eb-btn eb-btn-op"    onclick="exprToggleSign()">+/-</button>
-                <button class="eb-btn eb-btn-op"    onclick="exprAdd('-')">-</button>
-                <button class="eb-btn eb-btn-ok"    onclick="confirmComputedField()">${t("exprOK")}</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-
-    // Close FUNC dropdown on outside click
-    document.addEventListener("click", function(ev) {
-        if (!ev.target.closest("#exprFuncDropdownWrap")) {
-            document.getElementById("exprFuncMenu")?.classList.remove("show");
-        }
-    });
-}
-// ---- Expression Builder state ----
-let _exprValue = "";
-
-function exprToggleFuncMenu() {
-    document.getElementById("exprFuncMenu").classList.toggle("show");
-}
-
-function _exprTokenize(s) {
-    const t = []; let i = 0;
-    while (i < s.length) {
-        if (/\s/.test(s[i])) { i++; continue; }
-        const fieldMatch = s.slice(i).match(/^\[([^\]]+)\]/);
-        if (fieldMatch) {
-            t.push({ v: fieldMatch[0], t: "field" }); i += fieldMatch[0].length; continue;
-        }
-        if (/[A-Z_]/i.test(s[i])) {
-            const m = s.slice(i).match(/^[A-Z_]+/i);
-            if (m && s[i + m[0].length] === "(") { t.push({ v: m[0], t: "func" }); i += m[0].length; }
-            else { t.push({ v: s[i], t: "text" }); i++; }
-            continue;
-        }
-        if (/[0-9.]/.test(s[i])) {
-            let n = ""; while (i < s.length && /[0-9.]/.test(s[i])) { n += s[i]; i++; }
-            t.push({ v: n, t: "num" }); continue;
-        }
-        if ("()+-*/%".includes(s[i])) { t.push({ v: s[i], t: s[i] === "(" || s[i] === ")" ? "paren" : "op" }); i++; continue; }
-        if (s.slice(i, i+2) === "&&") { t.push({ v: "&&", t: "op" }); i += 2; continue; }
-        t.push({ v: s[i], t: "text" }); i++;
-    }
-    return t;
-}
-
-function _exprHighlight(s) {
-    if (!s) return `<span class="eb-empty">—</span>`;
-    return _exprTokenize(s).map(tk => {
-        const sp = document.createElement("span");
-        sp.textContent = tk.v;
-        sp.className = "hl-" + tk.t;
-        return sp.outerHTML;
-    }).join("");
-}
-
-function _exprValidate(s) {
-    const errs = []; let bal = 0; const ops = "+-*/%";
-    const fns = ["SUM","AVG","COUNT","MIN","MAX","IF","ROUND","LEN","CONCAT"];
-    let prev = null;
-    for (let i = 0; i < s.length; i++) {
-        const c = s[i];
-        if (c === "(") bal++;
-        else if (c === ")") { bal--; if (bal < 0) errs.push(t("exprErrExtraParen")); }
-        if (ops.includes(c) && ops.includes(prev)) errs.push(t("exprErrDoubleOperator"));
-        prev = c;
-    }
-    if (bal > 0) errs.push(t("exprErrUnclosedParen"));
-    if (s && ops.includes(s.slice(-1))) errs.push(t("exprErrEndsWithOperator"));
-    return errs;
-}
-
-function _exprUpdate() {
-    const disp = document.getElementById("exprBuilderDisplay");
-    if (!disp) return;
-    disp.innerHTML = _exprValue
-        ? _exprHighlight(_exprValue)
-        : `<span class="eb-empty">—</span>`;
-    const errs = _exprValidate(_exprValue);
-    disp.classList.toggle("eb-err", errs.length > 0);
-    disp.classList.toggle("eb-ok",  !errs.length && !!_exprValue);
-}
-
-function exprAdd(s) {
-    _exprValue += s;
-    _exprUpdate();
-    //document.getElementById("exprFieldMenu").style.display = "none";
-    //document.getElementById("exprFuncMenu").style.display = "none";
-}
-
-function exprAddField(tableField) {
-    _exprValue += `[${tableField}]`;
-    _exprUpdate();
-}
-
-function exprAddFunc(f) {
-    _exprValue += f;
-    _exprUpdate();
-    document.getElementById("exprFuncMenu")?.classList.remove("show");
-}
-
-function exprDel() {
-	console.log("DEL-",document.getElementById("exprFieldBtn").style.display)
-	if (document.getElementById("exprFieldBtn").style.display == "none") {
-		_exprHideFieldSelects()
-	}
-    if (!_exprValue) return;
-    // Delete bracketed field token as unit
-    const fieldMatch = _exprValue.match(/\[[^\]]+\]$/);
-    if (fieldMatch) { _exprValue = _exprValue.slice(0, -fieldMatch[0].length); _exprUpdate(); return; }
-    // Delete function name before (
-    if (/[A-Z_]+\($/i.test(_exprValue)) { _exprValue = _exprValue.replace(/[A-Z_]+\($/i, ""); _exprUpdate(); return; }
-    // Delete operator / paren
-    if ("()+-*/%".includes(_exprValue.slice(-1))) { _exprValue = _exprValue.slice(0,-1); _exprUpdate(); return; }
-    // Delete number digit by digit
-    _exprValue = _exprValue.slice(0, -1);
-    _exprUpdate();
-}
-
-function exprToggleSign() {
-    const m = [..._exprValue.matchAll(/(?:^|(?<=[+\-*\/%(]))(-?)(\d+(?:\.\d+)?)/g)];
-    if (!m.length) return;
-    const last = m[m.length - 1];
-    const st = last.index;
-    const neg = _exprValue[st] === "-";
-    _exprValue = neg ? _exprValue.slice(0, st) + _exprValue.slice(st + 1) : _exprValue.slice(0, st) + "-" + _exprValue.slice(st);
-    _exprUpdate();
-}
-
-/**
- * Show table+field selects in place of the "Додати поле" button
- */
-function exprShowFieldSelects() {
-    document.getElementById("exprFieldBtn").style.display = "none";
-    const tableSelect = document.getElementById("exprTableSelect");
-    tableSelect.style.display = "";
-    tableSelect.value = "";
-    const fieldSelect = document.getElementById("exprFieldSelect");
-    fieldSelect.style.display = "";
-    fieldSelect.innerHTML = `<option value="">${t("exprSelectField")}</option>`;
-    fieldSelect.disabled = true;
-    fieldSelect.style.opacity = "0.5";
-}
-
-/**
- * Restore "Додати поле" button, hide selects
- */
-function _exprHideFieldSelects() {
-    document.getElementById("exprFieldBtn").style.display = "";
-    document.getElementById("exprTableSelect").style.display = "none";
-    document.getElementById("exprFieldSelect").style.display = "none";
-}
-
-/**
- * Populate the table <select> with all query tables
- */
-function _exprPopulateFieldMenu() {
-    const tableSelect = document.getElementById("exprTableSelect");
-    const fieldSelect = document.getElementById("exprFieldSelect");
-    if (!tableSelect || !fieldSelect) return;
-
-    // Reset table select options (keep hidden)
-    tableSelect.innerHTML = `<option value="">${t("exprSelectTable")}</option>`;
-    getQueryTables().forEach(name => {
+function populateComputedTableDropdown(selectId) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = "";
+    const tables = getQueryTables();
+    tables.forEach(name => {
         const opt = document.createElement("option");
         opt.value = name;
         opt.textContent = name;
-        tableSelect.appendChild(opt);
+        select.appendChild(opt);
     });
-
-    // Reset field select
-    fieldSelect.innerHTML = `<option value="">${t("exprSelectField")}</option>`;
-    fieldSelect.disabled = true;
-    fieldSelect.style.opacity = "0.5";
-
-    // Ensure button is visible, selects hidden
-    _exprHideFieldSelects();
 }
 
 /**
- * Called when table select changes — populate field select
+ * Populates field dropdown based on selected table in computed modal
  */
-function exprOnTableChange() {
-    const tableSelect = document.getElementById("exprTableSelect");
-    const fieldSelect = document.getElementById("exprFieldSelect");
-    const tableName = tableSelect.value;
+function populateComputedFields(tableSelectId, fieldSelectId) {
+    const tableName = document.getElementById(tableSelectId).value;
+    const fieldSelect = document.getElementById(fieldSelectId);
+    fieldSelect.innerHTML = "";
+    if (!tableName) return;
 
-    fieldSelect.innerHTML = `<option value="">${t("exprSelectField")}</option>`;
-
-    if (!tableName) {
-        fieldSelect.disabled = true;
-        fieldSelect.style.opacity = "0.5";
-        return;
-    }
-
-    const table = database.tables.find(tb => tb.name === tableName);
+    const table = database.tables.find(t => t.name === tableName);
     if (!table) return;
 
     table.schema.forEach(field => {
@@ -484,87 +226,128 @@ function exprOnTableChange() {
         opt.textContent = field.title;
         fieldSelect.appendChild(opt);
     });
-
-    fieldSelect.disabled = false;
-    fieldSelect.style.opacity = "1";
 }
 
 /**
- * Called when field select changes — insert [TABLE.FIELD] token, restore button
+ * Toggle between field and value for right operand
  */
-function exprOnFieldChange() {
-    const tableSelect = document.getElementById("exprTableSelect");
-    const fieldSelect = document.getElementById("exprFieldSelect");
-    const tableName = tableSelect.value;
-    const fieldName = fieldSelect.value;
-    if (!tableName || !fieldName) return;
+function toggleComputedRightType() {
+    const type = document.getElementById("computedRightType").value;
+    const tableEl = document.getElementById("computedRightTable");
+    const fieldEl = document.getElementById("computedRightField");
+    const valueEl = document.getElementById("computedRightValue");
 
-    exprAddField(`${tableName}.${fieldName}`);
-    _exprHideFieldSelects();
+    if (type === "field") {
+        tableEl.style.display = "";
+        fieldEl.style.display = "";
+        valueEl.style.display = "none";
+    } else {
+        tableEl.style.display = "none";
+        fieldEl.style.display = "none";
+        valueEl.style.display = "";
+    }
 }
 
 /**
- * Opens the Expression Builder modal
+ * Opens the computed field modal, pre-populating dropdowns
  */
 function openComputedFieldModal() {
-    ensureExprBuilderModal();
-    _exprPopulateFieldMenu();
+    populateComputedTableDropdown("computedLeftTable");
+    populateComputedTableDropdown("computedRightTable");
+    populateComputedFields("computedLeftTable", "computedLeftField");
+    populateComputedFields("computedRightTable", "computedRightField");
 
-    // Restore from existing computed data or reset
+    // Set left table to the row's selected table
+    if (computedFieldTargetRow) {
+        const rowTable = computedFieldTargetRow.querySelector(".query-table-select").value;
+        if (rowTable) {
+            document.getElementById("computedLeftTable").value = rowTable;
+            populateComputedFields("computedLeftTable", "computedLeftField");
+            document.getElementById("computedRightTable").value = rowTable;
+            populateComputedFields("computedRightTable", "computedRightField");
+        }
+    }
+
+    // Reset
+    document.getElementById("computedOperator").value = "+";
+    document.getElementById("computedRightType").value = "field";
+    document.getElementById("computedRightValue").value = "";
+    document.getElementById("computedAlias").value = "";
+    toggleComputedRightType();
+
+    // Restore from existing data if editing
     if (computedFieldTargetRow && computedFieldTargetRow.dataset.computed) {
         const c = JSON.parse(computedFieldTargetRow.dataset.computed);
-        _exprValue = c.expr || "";
-        document.getElementById("exprBuilderAlias").value = c.alias || "";
-    } else {
-        _exprValue = "";
-        document.getElementById("exprBuilderAlias").value = "";
+        document.getElementById("computedLeftTable").value = c.leftTable;
+        populateComputedFields("computedLeftTable", "computedLeftField");
+        document.getElementById("computedLeftField").value = c.leftField;
+        document.getElementById("computedOperator").value = c.operator;
+        document.getElementById("computedRightType").value = c.rightType;
+        toggleComputedRightType();
+        if (c.rightType === "field") {
+            document.getElementById("computedRightTable").value = c.rightTable;
+            populateComputedFields("computedRightTable", "computedRightField");
+            document.getElementById("computedRightField").value = c.rightField;
+        } else {
+            document.getElementById("computedRightValue").value = c.rightField;
+        }
+        document.getElementById("computedAlias").value = c.alias;
     }
-    _exprUpdate();
 
-    document.getElementById("exprBuilderModal").style.display = "flex";
+    document.getElementById("computedFieldModal").style.display = "flex";
 }
 
 /**
- * Confirms the expression, stores on row as { expr, alias }
+ * Confirms computed field, stores data on the row
  */
 function confirmComputedField() {
-    const alias = document.getElementById("exprBuilderAlias").value.trim();
+    const alias = document.getElementById("computedAlias").value.trim();
     if (!alias) {
         Message(t("computedAliasRequired"));
         return;
     }
-    if (!_exprValue) {
-        Message(t("exprErrEmpty"));
-        return;
-    }
-    const errs = _exprValidate(_exprValue);
-    if (errs.length) {
-        Message(t("exprErrPrefix") + errs[0]);
-        return;
-    }
+
+    const rightType = document.getElementById("computedRightType").value;
+    const computed = {
+        leftTable: document.getElementById("computedLeftTable").value,
+        leftField: document.getElementById("computedLeftField").value,
+        operator: document.getElementById("computedOperator").value,
+        rightType: rightType,
+        rightTable: rightType === "field" ? document.getElementById("computedRightTable").value : null,
+        rightField: rightType === "field" ? document.getElementById("computedRightField").value : document.getElementById("computedRightValue").value.trim(),
+        alias: alias
+    };
+
     if (!computedFieldTargetRow) return;
 
-    const computed = { expr: _exprValue, alias };
+    // Store computed config on the row
     computedFieldTargetRow.dataset.computed = JSON.stringify(computed);
 
-    // Show alias as label, full expression as tooltip
+    // Build display label
+    const leftLabel = `${computed.leftTable}.${computed.leftField}`;
+    const rightLabel = computed.rightType === "field"
+        ? `${computed.rightTable}.${computed.rightField}`
+        : computed.rightField;
+    const displayText = `${leftLabel} ${computed.operator} ${rightLabel} → ${alias}`;
+
+    // Show expression display
     const display = computedFieldTargetRow.querySelector(".computed-expr-display");
-    display.innerHTML = `<span title="${_exprValue}" style="text-decoration:underline dotted;cursor:pointer;">⚡ ${alias}</span>`;
+    display.innerHTML = `<span title="${t("computedEditHint")}">⚡ ${displayText} ✏️</span>`;
     display.style.display = "block";
 
-    document.getElementById("exprBuilderModal").style.display = "none";
+    document.getElementById("computedFieldModal").style.display = "none";
     computedFieldTargetRow = null;
 }
 
 /**
- * Cancels the Expression Builder — revert select if no prior data
+ * Cancels computed field modal — revert select if no prior computed data
  */
 function cancelComputedField() {
     if (computedFieldTargetRow && !computedFieldTargetRow.dataset.computed) {
         const fieldSelect = computedFieldTargetRow.querySelector(".query-field-select");
         fieldSelect.value = fieldSelect.options[0]?.value || "";
     }
-    document.getElementById("exprBuilderModal").style.display = "none";
+    document.getElementById("computedFieldModal").style.display = "none";
     computedFieldTargetRow = null;
 }
 
@@ -575,7 +358,8 @@ function editComputedField(displayEl) {
     computedFieldTargetRow = displayEl.closest("tr");
     openComputedFieldModal();
 }
-// ===================== End Expression Builder =====================
+
+// ===================== End Computed Fields =====================
 
 /**
  * Видаляє рядок з конструктора запиту
@@ -660,7 +444,7 @@ function populateFieldDropdown(tableSelect) {
     // Додати опцію "* (всі поля)" на початок
     const starOption = document.createElement("option");
     starOption.value = "*";
-    starOption.textContent = t("queryAllField");
+    starOption.textContent = "* (Всі поля)";
     fieldSelect.appendChild(starOption);
 
     // Додати реальні поля таблиці
@@ -801,16 +585,13 @@ function generateSqlQuery() {
         // --- SELECT ---
         let selectExpr = "";
         if (fieldName === "__expr__" && computedData) {
-            // New Expression Builder format: { expr, alias }
-            // Replace [TABLE.FIELD] tokens with "TABLE"."FIELD"
-            let sqlExpr = computedData.expr.replace(/\[([^\]]+)\]/g, (_, tf) => {
-                const dot = tf.indexOf(".");
-                if (dot === -1) return `"${tf}"`;
-                const tbl = tf.slice(0, dot);
-                const fld = tf.slice(dot + 1);
-                return `"${tbl}"."${fld}"`;
-            });
-            selectExpr = `(${sqlExpr}) AS "${computedData.alias}"`;
+            const left = `"${computedData.leftTable}"."${computedData.leftField}"`;
+            const right = computedData.rightType === "field"
+                ? `"${computedData.rightTable}"."${computedData.rightField}"`
+                : isNumericLiteral(String(computedData.rightField))
+                    ? computedData.rightField
+                    : sqlQuote(computedData.rightField);
+            selectExpr = `(${left} ${computedData.operator} ${right}) AS ${computedData.alias}`;
             alias = computedData.alias;
             hasSelect = true;
         } else if (fieldName === "*") {
@@ -1256,21 +1037,15 @@ function populateQueryModal(queryDefinition) {
 
         // Restore computed field if present
         if (item.fieldName === "__expr__" && item.computed) {
-            let exprStr, aliasStr;
-            if (c.expr !== undefined) {
-                // New format
-                exprStr = c.expr;
-                aliasStr = c.alias;
-            } else {
-                // Legacy format — migrate to new
-                const leftLabel = `${c.leftTable}.${c.leftField}`;
-                const rightLabel = c.rightType === "field" ? `${c.rightTable}.${c.rightField}` : c.rightField;
-                exprStr = `[${leftLabel}]${c.operator}${c.rightType === "field" ? `[${rightLabel}]` : c.rightField}`;
-                aliasStr = c.alias;
-            }
-            row.dataset.computed = JSON.stringify({ expr: exprStr, alias: aliasStr });
+            row.dataset.computed = JSON.stringify(item.computed);
+            const c = item.computed;
+            const leftLabel = `${c.leftTable}.${c.leftField}`;
+            const rightLabel = c.rightType === "field"
+                ? `${c.rightTable}.${c.rightField}`
+                : c.rightField;
+            const displayText = `${leftLabel} ${c.operator} ${rightLabel} → ${c.alias}`;
             const display = row.querySelector(".computed-expr-display");
-            display.innerHTML = `<span title="${exprStr}" style="text-decoration:underline dotted;cursor:pointer;">⚡ ${aliasStr}</span>`;
+            display.innerHTML = `<span title="${t("computedEditHint")}">⚡ ${displayText} ✏️</span>`;
             display.style.display = "block";
         }
 
@@ -1524,7 +1299,7 @@ function saveOwnSQLquery() {
         const existingIndex = queries.definitions.findIndex(q => q.name === name);
     
         if (existingIndex !== -1) {
-            if (!confirm(t("queryOverwriteConfirm"))) return false;
+            if (!confirm("Запит з таким ім’ям вже існує. Перезаписати?")) return false;
             queries.definitions[existingIndex] = query;
         } else {
             queries.definitions.push(query);
