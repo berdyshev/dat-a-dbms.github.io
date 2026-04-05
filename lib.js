@@ -2591,6 +2591,15 @@ function onFieldSelectChange(selectEl) {
             display.innerHTML = "";
         }
         selectEl.style.display = "";
+        // Restore GROUP BY, WHERE, and role controls
+        const groupSel = row.querySelector(".group-field-select");
+        const opSel = row.querySelector(".query-operator-select");
+        const critInput = row.querySelector(".query-criteria-input");
+        const roleSel = row.querySelector(".query-field-role");
+        if (groupSel) groupSel.style.display = "";
+        if (opSel) opSel.style.display = "";
+        if (critInput) critInput.style.display = "";
+        if (roleSel) roleSel.style.display = "";
         delete row.dataset.computed;
         const { tableName } = parseCombinedValue(selectEl.value);
         const fromSelect = document.getElementById("fromTable");
@@ -2866,6 +2875,15 @@ function confirmComputedField() {
 
     const fieldSelect = computedFieldTargetRow.querySelector(".query-field-select");
     if (fieldSelect) fieldSelect.style.display = "none";
+    // Hide GROUP BY, WHERE, and role — not applicable for computed fields
+    const groupSel = computedFieldTargetRow.querySelector(".group-field-select");
+    const opSel = computedFieldTargetRow.querySelector(".query-operator-select");
+    const critInput = computedFieldTargetRow.querySelector(".query-criteria-input");
+    const roleSel = computedFieldTargetRow.querySelector(".query-field-role");
+    if (groupSel) groupSel.style.display = "none";
+    if (opSel) opSel.style.display = "none";
+    if (critInput) critInput.style.display = "none";
+    if (roleSel) roleSel.style.display = "none";
 
     document.getElementById("exprBuilderModal").style.display = "none";
     computedFieldTargetRow = null;
@@ -3030,7 +3048,8 @@ function generateSqlQuery() {
         const fieldRole = row.querySelector(".query-field-role").value;
         let alias = row.querySelector(".query-alias-input").value.trim();
 
-        if (!tableName || (!fieldName && fieldName !== "*")) return;
+        const isComputed = !!row.dataset.computed;
+        if (!isComputed && (!tableName || (!fieldName && fieldName !== "*"))) return;
         if (!baseTable && tableName !== "*") baseTable = tableName;
 
         // --- Computed expression ---
@@ -3524,7 +3543,16 @@ function populateQueryModal(queryDefinition) {
             const display = row.querySelector(".computed-expr-display");
             display.innerHTML = `<span title="${exprStr}" style="text-decoration:underline dotted;cursor:pointer;">⚡ ${aliasStr}</span>`;
             display.style.display = "block";
+            // Hide combined dropdown and inapplicable controls for computed field
             row.querySelector(".query-field-select").style.display = "none";
+            const groupSel = row.querySelector(".group-field-select");
+            const opSel = row.querySelector(".query-operator-select");
+            const critInput = row.querySelector(".query-criteria-input");
+            const roleSel = row.querySelector(".query-field-role");
+            if (groupSel) groupSel.style.display = "none";
+            if (opSel) opSel.style.display = "none";
+            if (critInput) critInput.style.display = "none";
+            if (roleSel) roleSel.style.display = "none";
         }
 
         const operatorSelect = row.querySelector(".query-operator-select");
